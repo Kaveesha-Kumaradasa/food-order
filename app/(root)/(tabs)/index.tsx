@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from "react-native";
 import { useRouter } from "expo-router";
 
+import { ImageSourcePropType } from "react-native";
+
 interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: string;
-  //image: string; // You'll replace this with actual image URLs later
+  image: ImageSourcePropType; // Use correct type for image
 }
 
 const MenuScreen = () => {
@@ -21,21 +23,21 @@ const MenuScreen = () => {
       name: "Burger",
       description: "Big juicy beef burger with sausage",
       price: "Rs. 800",
-      //image: "🍔" // Placeholder - replace with actual image
+      image: require("../../../assets/images/Food1.png"),
     },
     {
       id: "2",
       name: "Burger",
       description: "Big juicy beef burger with sausage",
       price: "Rs. 800",
-      //image: "🍔" // Placeholder - replace with actual image
+      image: require("../../../assets/images/Food1.png"),
     },
     {
       id: "3",
       name: "Burger",
       description: "Big juicy beef burger with sausage",
       price: "Rs. 800",
-      //image: "🍔" // Placeholder - replace with actual image
+      image: require("../../../assets/images/Food1.png"),
     },
   ];
 
@@ -50,8 +52,20 @@ const MenuScreen = () => {
         name: item.name,
         description: item.description,
         price: item.price.replace("Rs. ", ""), // Remove "Rs. " prefix for numeric value
-        //image: item.image,
+        imageId: "Food1.png", // Pass image identifier
         category: activeTab
+      }
+    });
+  };
+
+  const navigateToCart = () => {
+    // Navigate to cart screen
+    router.push({
+      pathname: "/subScreens/cart",
+      params: {
+        cartData: JSON.stringify([]), // Empty cart as a fallback
+        totalItems: "0",
+        totalAmount: "0"
       }
     });
   };
@@ -69,7 +83,7 @@ const MenuScreen = () => {
           <Text style={styles.menuItemPrice}>{item.price}</Text>
         </View>
         <View style={styles.menuItemImageContainer}>
-          {/*<Text style={styles.menuItemImage}>{item.image}</Text>*/}
+          <Image source={item.image} style={styles.menuItemImage} />
         </View>
       </View>
     </TouchableOpacity>
@@ -81,8 +95,11 @@ const MenuScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>YumHub</Text>
-          <TouchableOpacity style={styles.cartIcon}>
-            <Text style={styles.cartIconText}>🛒</Text>
+          <TouchableOpacity style={styles.cartIcon} onPress={navigateToCart}>
+            <Image
+              source={require("../../../assets/icons/shopping-cart.png")}
+              style={styles.cartIconImage}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -150,8 +167,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cartIconText: {
-    fontSize: 18,
+  cartIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
   tabContainer: {
     backgroundColor: '#FFFFFF',
@@ -238,7 +257,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   menuItemImage: {
-    fontSize: 30,
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
   },
 });
 
