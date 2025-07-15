@@ -1,4 +1,4 @@
-/*import React, { useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
@@ -106,7 +106,7 @@ const LoginScreen = () => {
         </TouchableOpacity>
 
         <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>Don't have an account? </Text>
+          <Text style={styles.signUpText}>Dont have an account? </Text>
           <TouchableOpacity onPress={() => router.push("/auth/signup")}>
             <Text style={styles.signUpLink}>Sign Up</Text>
           </TouchableOpacity>
@@ -167,9 +167,9 @@ const styles = StyleSheet.create({
   signUpLink: { color: "#A09080", fontSize: 14, fontWeight: "600" },
 });
 
-export default LoginScreen;*/
+export default LoginScreen;
 
-import { View, Text, Button } from "react-native";
+/*import { View, Text, Button } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function Login() {
@@ -188,4 +188,4 @@ export default function Login() {
       />
     </View>
   );
-}
+}*/

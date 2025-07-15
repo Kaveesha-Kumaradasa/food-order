@@ -1,4 +1,4 @@
-/*import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -197,71 +197,10 @@ const styles = StyleSheet.create({
   loginLink: { color: "#A09080", fontSize: 14, fontWeight: "600" },
 });
 
-export default RegisterScreen;*/
+export default RegisterScreen;
 
-/*import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useAuth } from '@/providers/AuthProvider';
-import { useRouter } from 'expo-router';
 
-const SettingsScreen = () => {
-  const { logout, isLoggingIn, user } = useAuth();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/auth/login');
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Settings</Text>
-      </View>
-
-      <View style={styles.content}>
-        {user && <Text style={styles.userInfo}>Logged in as: {user.email}</Text>}
-        <TouchableOpacity
-          style={[styles.logoutButton, isLoggingIn ? styles.logoutButtonDisabled : null]}
-          onPress={handleLogout}
-          disabled={isLoggingIn}
-        >
-          <Text style={styles.logoutButtonText}>
-            {isLoggingIn ? 'Logging out...' : 'Logout'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: {
-    backgroundColor: '#A09080',
-    paddingTop: 20,
-    paddingBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerText: { color: '#FFFFFF', fontSize: 20, fontWeight: '500' },
-  content: { flex: 1, padding: 20, justifyContent: 'center', alignItems: 'center' },
-  userInfo: { fontSize: 16, color: '#333333', marginBottom: 20 },
-  logoutButton: {
-    backgroundColor: '#A09080',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoutButtonDisabled: { backgroundColor: '#CCCCCC' },
-  logoutButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-});
-
-export default RegisterScreen;*/
-
-import { router } from 'expo-router';
+/*import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, Button } from 'react-native';
 
@@ -277,4 +216,4 @@ const RegisterScreen = () => {
   );
 };
 
-export default RegisterScreen;
+export default RegisterScreen;*/

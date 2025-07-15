@@ -1,34 +1,29 @@
-//import { useAuth } from "@/providers/AuthProvider";
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { useAuth } from "@/providers/AuthProvider";
 import { Redirect, Stack } from "expo-router";
-import { View, Text, SafeAreaView, ActivityIndicator } from "react-native";
+import { SafeAreaView, ActivityIndicator } from "react-native";
 
-const Layout = () => {
-/*  const { isLoggingIn, isAuthChecked, logout } = useAuth();
+export default function Layout() {
+  const { isLoggingIn, isAuthChecked, user } = useAuth();
 
-  if (isAuthChecked && !isLoggingIn) {
-    console.log(isAuthChecked, isLoggingIn, "isLoggingIn");
-    logout()
-    return <Redirect href="/auth/welcome" />;
-  }
   if (!isAuthChecked) {
     return (
       <SafeAreaView className="bg-white h-full flex justify-center items-center">
         <ActivityIndicator className="text-primary" size="large" />
       </SafeAreaView>
     );
-  }*/
+  }
+
+  if (isAuthChecked && !user && !isLoggingIn) {
+    console.log(isAuthChecked, isLoggingIn, "isLoggingIn");
+    return <Redirect href="/auth/welcome" />;
+  }
+
   return (
-    <ThemeProvider value={DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="subScreens/cart" />
-        <Stack.Screen name="subScreens/checkout" />
-        <Stack.Screen name="subScreens/foodDetail" />
-      </Stack>
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+      <Stack.Screen name="subScreens/cart" />
+      <Stack.Screen name="subScreens/checkout" />
+      <Stack.Screen name="subScreens/foodDetail" />
+    </Stack>
   );
-};
-export default Layout;
-
-
+}

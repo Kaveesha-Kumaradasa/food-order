@@ -1,139 +1,139 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from "react-native";
-import { useRouter } from "expo-router";
-
-import { ImageSourcePropType } from "react-native";
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  image: ImageSourcePropType; // Use correct type for image
-}
+// src/screens/MenuScreen.tsx
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { useMenu } from '@/providers/menuProvider';
+import { RootState } from '@/redux/store';
+import { setActiveCategory } from '@/redux/slices/menuSlice';
+import { MenuItem, Category } from '@/models/MenuItem';
 
 const MenuScreen = () => {
-  const [activeTab, setActiveTab] = useState("Burgers");
+  const { loading, error, refreshMenu } = useMenu();
+  const { items, categories, activeCategory } = useSelector((state: RootState) => state.menu);
+  const dispatch = useDispatch();
   const router = useRouter();
 
-  // Sample menu items - you can replace images later
-  const menuItems: MenuItem[] = [
-    {
-      id: "1",
-      name: "Burger",
-      description: "Big juicy beef burger with sausage",
-      price: "Rs. 800",
-      image: require("../../../assets/images/Food1.png"),
+const navigateToProductDetails = (item: MenuItem) => {
+  console.log('Navigating to ProductDetails with item:', {
+    id: item.id,
+    name: item.name,
+    image: item.image || 'No image provided',
+  }); // Debug navigation
+  router.push({
+    pathname: '/subScreens/foodDetail',
+    params: {
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price.replace('Rs. ', '') || '0',
+      category: item.category || activeCategory || 'Unknown',
+      allergies: JSON.stringify(item.allergies || []),
+      availability: item.availability ? 'true' : 'false',
+      image: item.image || '../../../assets/images/Food1.png', // Fallback image
     },
-    {
-      id: "2",
-      name: "Burger",
-      description: "Big juicy beef burger with sausage",
-      price: "Rs. 800",
-      image: require("../../../assets/images/Food1.png"),
-    },
-    {
-      id: "3",
-      name: "Burger",
-      description: "Big juicy beef burger with sausage",
-      price: "Rs. 800",
-      image: require("../../../assets/images/Food1.png"),
-    },
-  ];
-
-  const tabs = ["Offers", "Burgers", "Pizza", "Fried Rice", "Noodles", "Sandwiches", "Desserts", "Beverages", "Salads", "Pasta", "Soups", "Snacks"];
-
-  const navigateToProductDetails = (item: MenuItem) => {
-    // Navigate to product details screen and pass the item data
-    router.push({
-      pathname: "/subScreens/foodDetail",
-      params: {
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        price: item.price.replace("Rs. ", ""), // Remove "Rs. " prefix for numeric value
-        imageId: "Food1.png", // Pass image identifier
-        category: activeTab
-      }
-    });
-  };
+  });
+};
 
   const navigateToCart = () => {
-    // Navigate to cart screen
+    // Placeholder: Fetch actual cart data from Redux or AsyncStorage if implemented
     router.push({
-      pathname: "/subScreens/cart",
+      pathname: '/subScreens/cart',
       params: {
-        cartData: JSON.stringify([]), // Empty cart as a fallback
-        totalItems: "0",
-        totalAmount: "0"
-      }
+        cartData: JSON.stringify([]), // Replace with actual cart data if available
+        totalItems: '',
+        totalAmount: '0',
+      },
     });
   };
 
   const renderMenuItem = (item: MenuItem) => (
-    <TouchableOpacity 
-      key={item.id} 
-      style={styles.menuItem}
-      onPress={() => navigateToProductDetails(item)}
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.menuItem, !item.availability && styles.unavailableItem]}
+      onPress={() => item.availability && navigateToProductDetails(item)}
+      disabled={!item.availability}
     >
       <View style={styles.menuItemContent}>
         <View style={styles.menuItemInfo}>
           <Text style={styles.menuItemName}>{item.name}</Text>
           <Text style={styles.menuItemDescription}>{item.description}</Text>
           <Text style={styles.menuItemPrice}>{item.price}</Text>
+          {item.allergies && item.allergies.length > 0 && (
+            <Text style={styles.menuItemAllergies}>Allergens: {item.allergies.join(', ')}</Text>
+          )}
+          {!item.availability && (
+            <Text style={styles.unavailableText}>Currently Unavailable</Text>
+          )}
         </View>
-        <View style={styles.menuItemImageContainer}>
-          <Image source={item.image} style={styles.menuItemImage} />
-        </View>
+        {item.image && (
+          <Image source={{ uri: item.image }} style={styles.menuItemImage} resizeMode="contain" />
+        )}
       </View>
     </TouchableOpacity>
   );
 
+  const filteredItems = items.filter((item) => item.category === activeCategory);
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>YumHub</Text>
-          <TouchableOpacity style={styles.cartIcon} onPress={navigateToCart}>
+          <TouchableOpacity style={[styles.cartIcon, { pointerEvents: 'auto' }]} onPress={navigateToCart}>
             <Image
-              source={require("../../../assets/icons/shopping-cart.png")}
+              source={require('../../../assets/icons/shopping-cart.png')}
               style={styles.cartIconImage}
+              resizeMode="contain"
             />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Tab Navigation */}
       <View style={styles.tabContainer}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabScrollContent}
-        >
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[
-                styles.tab,
-                activeTab === tab && styles.activeTab
-              ]}
-              onPress={() => setActiveTab(tab)}
-            >
-              <Text style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText
-              ]}>
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScrollContent}>
+          {loading ? (
+            <Text style={styles.loading}>Loading...</Text>
+          ) : error ? (
+            <>
+              <Text style={styles.error}>Error: {error}</Text>
+              <TouchableOpacity style={styles.refreshButton} onPress={refreshMenu}>
+                <Text style={styles.refreshText}>Try Again</Text>
+              </TouchableOpacity>
+            </>
+          ) : categories.length > 0 ? (
+            categories.map((category: Category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[styles.tab, activeCategory === category.name && styles.activeTab]}
+                onPress={() => dispatch(setActiveCategory(category.name))}
+              >
+                <Text style={[styles.tabText, activeCategory === category.name && styles.activeTabText]}>
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={styles.noCategories}>No categories available</Text>
+          )}
+          {!loading && !error && categories.length === 1 && categories[0].name === 'Sri Lankan' && (
+            <Text style={styles.warning}>
+              Using mock data due to failed API request. Please check server configuration.
+            </Text>
+          )}
         </ScrollView>
       </View>
 
-      {/* Menu Items */}
       <ScrollView style={styles.menuContainer}>
-        {menuItems.map(renderMenuItem)}
+        {loading ? (
+          <Text style={styles.loading}>Loading menu...</Text>
+        ) : error ? (
+          <Text style={styles.error}>Error loading menu: {error}</Text>
+        ) : filteredItems.length > 0 ? (
+          filteredItems.map(renderMenuItem)
+        ) : (
+          <Text style={styles.noItems}>No items available for {activeCategory || ''}</Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
   cartIconImage: {
     width: 24,
     height: 24,
-    resizeMode: 'contain',
   },
   tabContainer: {
     backgroundColor: '#FFFFFF',
@@ -214,6 +213,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     padding: 15,
   },
+  unavailableItem: {
+    backgroundColor: '#E0E0E0',
+    opacity: 0.6,
+  },
   menuItemContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -221,7 +224,6 @@ const styles = StyleSheet.create({
   },
   menuItemInfo: {
     flex: 1,
-    paddingRight: 15,
   },
   menuItemName: {
     fontSize: 16,
@@ -240,26 +242,57 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
   },
-  menuItemImageContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+  menuItemAllergies: {
+    fontSize: 12,
+    color: '#FF4500',
+    marginTop: 4,
+  },
+  unavailableText: {
+    fontSize: 12,
+    color: '#FF0000',
+    marginTop: 4,
   },
   menuItemImage: {
-    width: 50,
-    height: 50,
-    resizeMode: 'contain',
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  loading: {
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  error: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#FF0000',
+  },
+  refreshButton: {
+    padding: 10,
+    backgroundColor: '#A1CEDC',
+    borderRadius: 8,
+    marginTop: 10,
+    alignSelf: 'center',
+  },
+  refreshText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  noItems: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#666666',
+  },
+  noCategories: {
+    textAlign: 'center',
+    paddingHorizontal: 15,
+    color: '#666666',
+  },
+  warning: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#FFA500',
+    fontStyle: 'italic',
   },
 });
 

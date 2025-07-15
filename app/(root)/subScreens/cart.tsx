@@ -5,9 +5,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 interface CartItem {
   id: string;
   name: string;
-  price: number;
+  price: string; // Changed to string to match ProductDetailsScreen
   quantity: number;
-  image: any; // Use 'any' to accommodate require() paths
+  image?: string; // URL or local asset
 }
 
 const CartScreen = () => {
@@ -15,21 +15,20 @@ const CartScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  // Map image identifiers to require() paths
-  const imageMap: { [key: string]: any } = {
-    "Food1.png": require("../../../assets/images/Food1.png"),
-    
-  };
+  // Placeholder image URL
+  const PLACEHOLDER_IMAGE = 'https://picsum.photos/300/200?random=1';
 
   useEffect(() => {
     // Get cart data from navigation params
     if (params.cartData) {
       try {
         const parsedCartData = JSON.parse(params.cartData as string);
-        // Map image identifiers to require() paths
-        const updatedCartData = parsedCartData.map((item: CartItem) => ({
+        console.log('Parsed Cart Data:', parsedCartData); // Debug cart data
+        // Validate and convert price to string if needed
+        const updatedCartData = parsedCartData.map((item: any) => ({
           ...item,
-          image: imageMap[item.image as string] || require("../../../assets/images/Food1.png")
+          price: item.price ? String(item.price) : '0.00', // Ensure price is string
+          image: item.image || PLACEHOLDER_IMAGE, // Ensure image fallback
         }));
         setCartItems(updatedCartData);
       } catch (error) {
@@ -69,7 +68,12 @@ const CartScreen = () => {
   };
 
   const getTotalAmount = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems
+      .reduce((total, item) => {
+        const price = parseFloat(item.price) || 0; // Convert price to number
+        return total + price * item.quantity;
+      }, 0)
+      .toFixed(2);
   };
 
   const getTotalItems = () => {
@@ -77,18 +81,11 @@ const CartScreen = () => {
   };
 
   const goBack = () => {
-    // Option 1: Try to go back in navigation stack
+    // Navigate back to MenuScreen or home
     if (router.canGoBack()) {
       router.back();
     } else {
-      // Option 2: Navigate to specific route
-      // If you have an item ID from params, you can navigate back to that item
-      if (params.itemId) {
-        router.push(`./foodDetails/${params.itemId}`);
-      } else {
-        // Option 3: Navigate to home/main screen
-        router.push('/');
-      }
+      router.push('./(tabs)/index'); 
     }
   };
 
@@ -98,68 +95,71 @@ const CartScreen = () => {
       return;
     }
     
-    // Navigate to checkout screen with cart data
     router.push({
-      pathname: './checkout',
+      pathname: '/subScreens/checkout',
       params: {
-        cartData: JSON.stringify(cartItems.map(item => ({
-          ...item,
-          image: "Food1.png" // Pass image identifier
-        })))
-      }
+        cartData: JSON.stringify(cartItems),
+        totalItems: getTotalItems().toString(),
+        totalAmount: getTotalAmount(),
+      },
     });
   };
 
-  const renderCartItem = ({ item }: { item: CartItem }) => (
-    <View style={styles.cartItemContainer}>
-      <View style={styles.itemImageContainer}>
-        <Image
-          source={item.image}
-          style={styles.itemImage}
-        />
-      </View>
-      
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>Rs. {item.price}</Text>
-      </View>
-      
-      <View style={styles.quantityControls}>
-        <TouchableOpacity 
-          style={styles.quantityButton}
-          onPress={() => updateQuantity(item.id, item.quantity - 1)}
-        >
-          <Text style={styles.quantityButtonText}>-</Text>
-        </TouchableOpacity>
+  const renderCartItem = ({ item }: { item: CartItem }) => {
+    const price = parseFloat(item.price) || 0; // Convert price to number
+    return (
+      <View style={styles.cartItemContainer}>
+        <View style={styles.itemImageContainer}>
+          <Image
+            source={item.image ? { uri: item.image } : { uri: PLACEHOLDER_IMAGE }}
+            style={styles.itemImage}
+            resizeMode="cover"
+            onError={(error) => console.error('Cart Item Image Error:', item.name, error.nativeEvent.error, item.image)}
+          />
+        </View>
         
-        <Text style={styles.quantityText}>{item.quantity}</Text>
+        <View style={styles.itemDetails}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <Text style={styles.itemPrice}>Rs. {price.toFixed(2)}</Text>
+        </View>
         
-        <TouchableOpacity 
-          style={styles.quantityButton}
-          onPress={() => updateQuantity(item.id, item.quantity + 1)}
-        >
-          <Text style={styles.quantityButtonText}>+</Text>
-        </TouchableOpacity>
+        <View style={styles.quantityControls}>
+          <TouchableOpacity 
+            style={styles.quantityButton}
+            onPress={() => updateQuantity(item.id, item.quantity - 1)}
+          >
+            <Text style={styles.quantityButtonText}>-</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.quantityText}>{item.quantity}</Text>
+          
+          <TouchableOpacity 
+            style={styles.quantityButton}
+            onPress={() => updateQuantity(item.id, item.quantity + 1)}
+          >
+            <Text style={styles.quantityButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.itemTotal}>
+          <Text style={styles.itemTotalText}>Rs. {(price * item.quantity).toFixed(2)}</Text>
+          <TouchableOpacity 
+            style={styles.removeButton}
+            onPress={() => removeItem(item.id)}
+          >
+            <Text style={styles.removeButtonText}>×</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      
-      <View style={styles.itemTotal}>
-        <Text style={styles.itemTotalText}>Rs. {item.price * item.quantity}</Text>
-        <TouchableOpacity 
-          style={styles.removeButton}
-          onPress={() => removeItem(item.id)}
-        >
-          <Text style={styles.removeButtonText}>×</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Image source={require("../../../assets/icons/back.png")} style={styles.backButton}/>
+          <Image source={require('../../../assets/icons/back.png')} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Your Cart</Text>
         <View style={styles.headerSpacer} />
@@ -226,10 +226,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 20,
-    color: '#333333',
-    fontWeight: '400',
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   headerTitle: {
     flex: 1,
@@ -237,7 +236,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
     textAlign: 'center',
-    marginRight: 40,
   },
   headerSpacer: {
     width: 40,
@@ -257,16 +255,17 @@ const styles = StyleSheet.create({
   itemImageContainer: {
     width: 60,
     height: 60,
-    borderRadius: 30,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
+    overflow: 'hidden',
   },
   itemImage: {
-    width: 50,
-    height: 50,
-    resizeMode: 'contain',
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
   itemDetails: {
     flex: 1,
