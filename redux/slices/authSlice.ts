@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+/*import { createSlice } from '@reduxjs/toolkit';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -51,4 +51,4 @@ const authSlice = createSlice({
 });
 
 export const { loginUser, registerUser, getCurrentUser, logoutSuccess, loginUserError, registerUserError } = authSlice.actions;
-export default authSlice.reducer;
+export default authSlice.reducer;*/

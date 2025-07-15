@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import { AppDispatch } from '@/redux/store';
-import { getCurrentUser, loginUser, registerUser, logoutUser } from '@/redux/actions/authActions';
+/*import React, { createContext, useContext, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { AppDispatch } from "@/redux/store";
+import { getCurrentUser, loginUser, registerUser, logoutUser } from "@/redux/actions/authActions";
 
 type User = {
   email: string;
@@ -39,20 +39,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadTenantCode = async () => {
     try {
-      const storedTenantCode = await AsyncStorage.getItem('x-tenant-code');
+      const storedTenantCode = await AsyncStorage.getItem("x-tenant-code");
       if (storedTenantCode) {
         setTenantCode(storedTenantCode);
       }
     } catch (error) {
-      console.error('Error loading tenant code from AsyncStorage:', error);
+      console.error("Error loading tenant code from AsyncStorage:", error);
     }
   };
 
   useEffect(() => {
     const checkUserSession = async () => {
       try {
+        console.log("call tenant");
         await loadTenantCode();
-        const storedUser = await AsyncStorage.getItem('user');
+        const storedUser = await AsyncStorage.getItem("user");
+        console.log(storedUser, "storedUser");
 
         if (storedUser) {
           setIsLoggingIn(true);
@@ -61,16 +63,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (response?.data) {
                 const userInfo = response.data;
                 const updatedUserData: User = {
-                  email: userInfo.email || '',
+                  email: userInfo.email || "",
                 };
                 setUser(updatedUserData);
                 setIsLoggingIn(false);
-                router.replace('/(root)/(tabs)');
               } else {
-                console.error('Failed to fetch user:', error);
+                console.error("Failed to fetch user:", error);
                 setUser(null);
                 setIsLoggingIn(false);
-                setErrorMessage(error || 'Session check failed');
+                setErrorMessage(error || "Session check failed");
               }
             })
           );
@@ -79,40 +80,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsAuthChecked(true);
         }
       } catch (error) {
-        console.error('Error checking user session:', error);
+        console.error("Error checking user session:", error);
         setIsLoggingIn(false);
         setIsAuthChecked(true);
-        setErrorMessage('Error checking session');
+        setErrorMessage("Error checking session");
       }
     };
 
     checkUserSession();
   }, [dispatch]);
 
-  const login: AuthContextProps['login'] = (credentials, callback) => {
-    console.log('Starting login process'); // Debug log
+  const login: AuthContextProps["login"] = (credentials, callback) => {
+    console.log("Starting login process"); // Debug log
     setIsLoggingIn(true);
     setErrorMessage(null);
     dispatch(
       loginUser(credentials, (success: boolean, errorStatus: number, errorMessage: string) => {
-        console.log('Login callback triggered, success:', success, 'error:', errorMessage); // Debug log
+        console.log("Login callback triggered, success:", success, "error:", errorMessage); // Debug log
         if (success) {
           dispatch(
             getCurrentUser((response: any, error?: string) => {
               if (response?.data) {
                 const userInfo = response.data;
                 const updatedUserData: User = {
-                  email: userInfo.email || '',
+                  email: userInfo.email || "",
+                  
                 };
                 loadTenantCode();
                 setUser(updatedUserData);
                 setIsLoggingIn(false);
                 callback(true, undefined, undefined);
-                router.replace('/(root)/(tabs)');
               } else {
                 setIsLoggingIn(false);
-                callback(false, 'FETCH_ERROR', error || 'Failed to fetch user data');
-                setErrorMessage(error || 'Login failed');
+                callback(false, "FETCH_ERROR", error || "Failed to fetch user data");
+                setErrorMessage(error || "Login failed");
               }
             })
           );
@@ -125,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  const register: AuthContextProps['register'] = (credentials, callback) => {
+  const register: AuthContextProps["register"] = (credentials, callback) => {
     setIsLoggingIn(true);
     setErrorMessage(null);
     dispatch(
@@ -136,17 +137,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (response?.data) {
                 const userInfo = response.data;
                 const updatedUserData: User = {
-                  email: userInfo.email || '',
+                  email: userInfo.email || "",
                 };
                 loadTenantCode();
                 setUser(updatedUserData);
                 setIsLoggingIn(false);
                 callback(true, undefined, undefined);
-                router.replace('/auth/login');
               } else {
                 setIsLoggingIn(false);
-                callback(false, 'FETCH_ERROR', error || 'Failed to fetch user data');
-                setErrorMessage(error || 'Registration failed');
+                callback(false, "FETCH_ERROR", error || "Failed to fetch user data");
+                setErrorMessage(error || "Registration failed");
               }
             })
           );
@@ -167,11 +167,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTenantCode(null);
         setErrorMessage(null);
         setIsLoggingIn(false);
-        router.replace('/auth/login'); // Redirect to home after logout
       }));
+      router.replace("/auth/welcome"); // Navigation handled here for logout
     } catch (error) {
-      console.error('Error during logout:', error);
-      setErrorMessage('Error during logout');
+      console.error("Error during logout:", error);
+      setErrorMessage("Error during logout");
       setIsLoggingIn(false);
     }
   };
@@ -195,6 +195,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
-};
+};*/

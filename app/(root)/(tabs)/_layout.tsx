@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, Image } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -21,30 +21,61 @@ export default function TabLayout() {
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
+            //position: 'absolute',
           },
           default: {},
         }),
       }}>
+
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={
+                focused
+                  ? require("@/assets/icons/home-active.png")
+                  : require("@/assets/icons/home-inactive.png")
+              }
+              style={{ width: 30, height: 30 }}
+              resizeMode="contain"
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Browse",
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={
+                focused
+                  ? require("@/assets/icons/search-active.png")
+                  : require("@/assets/icons/search-inactive.png")
+              }
+              style={{ width: 30, height: 30 }}
+              resizeMode="contain"
+            />
+          ),
         }}
       />
-            <Tabs.Screen
+      <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Setting",
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={
+                focused
+                  ? require("@/assets/icons/setting-active.png")
+                  : require("@/assets/icons/setting-inactive.png")
+              }
+              style={{ width: 30, height: 30 }}
+              resizeMode="contain"
+            />
+          ),
         }}
       />
     </Tabs>

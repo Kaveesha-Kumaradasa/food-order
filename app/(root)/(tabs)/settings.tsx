@@ -1,4 +1,4 @@
-import React from 'react';
+/*import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRouter } from 'expo-router';
@@ -58,4 +58,22 @@ const styles = StyleSheet.create({
   logoutButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
 });
 
-export default SettingsScreen;
+export default SettingsScreen;*/
+
+import { router } from 'expo-router';
+import React from 'react';
+import { View, Text, Button } from 'react-native';
+
+const Settings = () => {
+  return (
+    <View>
+      <Text>Register Screen</Text>
+            <Button
+        title="Go to Welcome"
+        onPress={() => router.push("/auth/welcome")}
+      />
+    </View>
+  );
+};
+
+export default Settings;

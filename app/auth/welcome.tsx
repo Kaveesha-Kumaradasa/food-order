@@ -15,7 +15,7 @@ const Welcome = () => {
         {/* Food Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={require('../assets/images/Food1.png')}
+            source={require('../../assets/images/Food1.png')}
             style={styles.foodImage}
           />
         </View>

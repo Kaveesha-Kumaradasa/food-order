@@ -1,4 +1,4 @@
-import { AppDispatch } from '../store';
+/*import { AppDispatch } from '../store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { environment } from '@/environments';
 import httpInterceptor from '@/services/http-interceptor';
@@ -156,4 +156,4 @@ export const logoutUser =
     } catch (error) {
       console.error('Error removing AsyncStorage items:', error);
     }
-  };
+  };*/
