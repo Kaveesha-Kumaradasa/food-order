@@ -1,137 +1,135 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, FlatList, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, FlatList, Image, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/store';
+import { fetchMenuData } from '@/redux/actions/menuActions';
+import { MenuItem } from '@/models/MenuItem';
+//import { addToCart } from '@/redux/slices/cartSlice';
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  image: any; 
-  category: string;
-}
 
 const SearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<MenuItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { items, loading, error } = useSelector((state: RootState) => state.menu);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+
+  // Placeholder image URL
+  const PLACEHOLDER_IMAGE = '../../../assets/images/Food1.png';
 
 
-  const allMenuItems: MenuItem[] = [
-    {
-      id: "1",
-      name: "Burger",
-      description: "Big juicy beef burger with sausage",
-      price: "Rs. 800",
-      image: require("../../../assets/images/Food1.png"), 
-      category: "Burgers"
-    },
-    {
-      id: "2",
-      name: "Cheese Burger",
-      description: "Delicious cheese burger with beef patty",
-      price: "Rs. 900",
-      image: require("../../../assets/images/Food1.png"), 
-      category: "Burgers"
-    },
-    {
-      id: "3",
-      name: "Chicken Burger",
-      description: "Grilled chicken burger with fresh lettuce",
-      price: "Rs. 750",
-      image: require("../../../assets/images/Food1.png"), 
-      category: "Burgers"
-    },
-    {
-      id: "4",
-      name: "Margherita Pizza",
-      description: "Classic pizza with tomato sauce and mozzarella",
-      price: "Rs. 1200",
-      image: require("../../../assets/images/Food1.png"), 
-      category: "Pizza"
-    },
-    {
-      id: "5",
-      name: "Pepperoni Pizza",
-      description: "Pizza topped with pepperoni and cheese",
-      price: "Rs. 1400",
-      image: require("../../../assets/images/Food1.png"), 
-      category: "Pizza"
-    },
-  ];
-
-  // Search functionality
   useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
+    if (items.length === 0) {
+      dispatch(fetchMenuData());
     }
+  }, [dispatch, items.length]);
 
-    setIsSearching(true);
-    
-    // Filter menu items based on search query
-    const filtered = allMenuItems.filter(item =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
-    setSearchResults(filtered);
-  }, [searchQuery]);
+  useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      if (searchQuery.trim() === "") {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      setIsSearching(true);
+
+      const filtered = items.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      setSearchResults(filtered);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(debounceTimeout); // Cleanup timeout
+  }, [searchQuery, items]);
 
   const navigateToProductDetails = (item: MenuItem) => {
-    // Navigate to product details screen and pass the item data
+    /*console.log('Navigating to ProductDetails with item:', {
+      id: item.id,
+      name: item.name,
+      image: item.image || 'No image provided',
+      price: item.price || 'No price provided',
+    });*/
     router.push({
       pathname: "/subScreens/foodDetail",
       params: {
         id: item.id,
         name: item.name,
         description: item.description,
-        price: item.price.replace("Rs. ", ""), // Remove "Rs. " prefix for numeric value
-        // image: item.image, // Commented out as require() paths can't be serialized
-        category: item.category
-      }
+        price: item.price,
+        category: item.category,
+        allergies: JSON.stringify(item.allergies || []),
+        availability: item.availability ? 'true' : 'false',
+        image: item.image || PLACEHOLDER_IMAGE,
+      },
     });
   };
 
-    const navigateToCart = () => {
-    // Navigate to cart screen
-    router.push({
-      pathname: "/subScreens/cart",
-      params: {
-        cartData: JSON.stringify([]), // Empty cart as a fallback
-        totalItems: "0",
-        totalAmount: "0"
-      }
-    });
+  const navigateToCart = () => {
+    router.push('/subScreens/cart');
+  };
+
+  /*const handleAddToCart = (item: MenuItem) => {
+    dispatch(addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price.replace('Rs. ', '') || '0.00',
+      quantity: 1,
+      image: item.image || PLACEHOLDER_IMAGE,
+    }));
+  };*/
+
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
   const renderMenuItem = ({ item }: { item: MenuItem }) => (
-    <TouchableOpacity 
-      style={styles.menuItem}
-      onPress={() => navigateToProductDetails(item)}
-    >
-      <View style={styles.menuItemContent}>
+    <View style={[styles.menuItem, !item.availability && styles.unavailableItem]}>
+      <TouchableOpacity
+        style={styles.menuItemContent}
+        onPress={() => item.availability && navigateToProductDetails(item)}
+        disabled={!item.availability}
+      >
         <View style={styles.menuItemInfo}>
           <Text style={styles.menuItemName}>{item.name}</Text>
           <Text style={styles.menuItemDescription}>{item.description}</Text>
-          <Text style={styles.menuItemPrice}>{item.price}</Text>
+          <Text style={styles.menuItemPrice}>Rs. {item.price}</Text>
+          {!item.availability && (
+            <Text style={styles.unavailableText}>Currently Unavailable</Text>
+          )}
         </View>
         <View style={styles.menuItemImageContainer}>
           <Image
-            source={item.image}
+            source={{ uri: item.image || PLACEHOLDER_IMAGE }}
             style={styles.menuItemImage}
+            resizeMode="cover"
+            onError={(error) => console.error('Search Item Image Error:', item.name, error.nativeEvent.error, item.image)}
           />
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      {/*{item.availability && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => handleAddToCart(item)}
+        >
+          <Text style={styles.addButtonText}>Add to Cart</Text>
+        </TouchableOpacity>
+      )}*/}
+    </View>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      {searchQuery.trim() === "" ? (
+      {loading ? (
+        <ActivityIndicator size="large" color="#A09080" />
+      ) : error ? (
+        <Text style={styles.emptyText}>Error loading menu: {error}</Text>
+      ) : searchQuery.trim() === "" ? (
         <Text style={styles.emptyText}>Start typing to search for menu items...</Text>
       ) : (
         <Text style={styles.emptyText}>No items found for "{searchQuery}"</Text>
@@ -141,31 +139,35 @@ const SearchScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Browse</Text>
           <TouchableOpacity style={styles.cartIcon} onPress={navigateToCart}>
-            <Image source={require("../../../assets/icons/shopping-cart.png")} style={styles.cartIconImage}/>
+            <Image source={require("../../../assets/icons/shopping-cart.png")} style={styles.cartIconImage} />
+            {getTotalItems() > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{getTotalItems()}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Search Input */}
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <TextInput
             style={styles.searchInput}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search"
+            placeholder="Search by item name"
             placeholderTextColor="#999"
             autoCapitalize="none"
             autoCorrect={false}
           />
           <TouchableOpacity style={styles.searchIcon}>
             <Image
-              source={require("../../../assets/icons/search-icon.png")} // Adjust path as needed
+              source={require("../../../assets/icons/search-icon.png")}
               style={styles.searchIconImage}
             />
           </TouchableOpacity>
@@ -211,6 +213,34 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#333333',
+  },
+  cartIcon: {
+    position: 'relative',
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#A09080',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   searchContainer: {
     paddingHorizontal: 20,
@@ -258,6 +288,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     padding: 15,
   },
+  unavailableItem: {
+    backgroundColor: '#E0E0E0',
+    opacity: 0.6,
+  },
   menuItemContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -284,10 +318,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
   },
+  unavailableText: {
+    fontSize: 12,
+    color: '#FF0000',
+    marginTop: 4,
+  },
   menuItemImageContainer: {
     width: 60,
     height: 60,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -299,11 +338,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    overflow: 'hidden',
   },
   menuItemImage: {
-    width: 50,
-    height: 50,
-    resizeMode: 'contain',
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  addButton: {
+    backgroundColor: '#A09080',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: 'flex-end',
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,
@@ -317,17 +370,6 @@ const styles = StyleSheet.create({
     color: '#999999',
     textAlign: 'center',
     lineHeight: 24,
-  },
-    cartIcon: {
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cartIconImage: {
-    width: 24, // Adjust size as needed
-    height: 24, // Adjust size as needed
-    resizeMode: 'contain', // Ensure the image scales properly
   },
 });
 

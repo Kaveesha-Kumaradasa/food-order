@@ -1,15 +1,12 @@
-/*import { AppDispatch } from '../store';
+import { AppDispatch } from '../store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { environment } from '@/environments';
 import httpInterceptor from '@/services/http-interceptor';
 
 export const loginUser =
-  (
-    credentials: { email: string; password: string },
-    callback: (success: boolean, errorStatus: number, errorMessage: string) => void
-  ) =>
+  (credentials: { email: string; password: string }, callback: (success: boolean, errorStatus: number, errorMessage: string) => void) =>
   async (dispatch: AppDispatch) => {
-    console.log('Login attempt with:', credentials); // Debug log
+    //console.log('Login attempt with:', credentials);
     try {
       await AsyncStorage.setItem('x-tenant-code', environment.x_tenant_code);
 
@@ -29,26 +26,27 @@ export const loginUser =
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Access-Control-Allow-Origin': '*',
             'x-tenant-code': environment.x_tenant_code,
           },
         }
       );
 
-      console.log('Login response:', response.data); // Debug log
-      if (response.data && response.data.accessToken) { // Changed from access_token to accessToken
+      //console.log('Login response:', response.data);
+      if (response.data && response.data.accessToken) {
         const userData = {
-          access_token: response.data.accessToken, // Store as access_token for consistency
+          access_token: response.data.accessToken,
           ...response.data,
         };
         await AsyncStorage.setItem('user', JSON.stringify(userData));
         dispatch({ type: 'auth/loginUser', payload: userData });
         callback(true, 0, '');
+        // Navigate to home tab after successful login
+        // This should be handled in the UI callback
       } else {
         callback(false, 0, 'No access token received. Response: ' + JSON.stringify(response.data));
       }
     } catch (error: any) {
-      console.error('Login error:', error.response?.data || error.message, error.response?.status); // Detailed error log
+      console.error('Login error:', error.response?.data || error.message, error.response?.status);
       const errorMessage = error.response?.data?.message || error.message || 'Login failed';
       const errorStatus = error.response?.status || 0;
       callback(false, errorStatus, errorMessage);
@@ -107,7 +105,7 @@ export const registerUser =
     }
   };
 
-export const getCurrentUser =
+/*export const getCurrentUser =
   (callback: (response: any, error?: string) => void) => async (dispatch: AppDispatch) => {
     try {
       const tenantCode = await AsyncStorage.getItem('x-tenant-code');
@@ -143,7 +141,7 @@ export const getCurrentUser =
       const errorMessage = error.response?.data?.message || 'Failed to fetch user data';
       callback(false, errorMessage);
     }
-  };
+  };*/
 
 export const logoutUser =
   (callback?: () => void) => async (dispatch: AppDispatch) => {
@@ -156,4 +154,4 @@ export const logoutUser =
     } catch (error) {
       console.error('Error removing AsyncStorage items:', error);
     }
-  };*/
+  };

@@ -1,4 +1,3 @@
-/*import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRouter } from 'expo-router';
@@ -9,7 +8,7 @@ const SettingsScreen = () => {
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/auth/login');
+    router.replace('/auth/welcome');
   };
 
   return (
@@ -19,7 +18,7 @@ const SettingsScreen = () => {
       </View>
 
       <View style={styles.content}>
-        {user && <Text style={styles.userInfo}>Logged in as: {user.email}</Text>}
+        {user && <Text style={styles.userInfo}>Logout</Text>}
         <TouchableOpacity
           style={[styles.logoutButton, isLoggingIn ? styles.logoutButtonDisabled : null]}
           onPress={handleLogout}
@@ -37,15 +36,29 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
-    backgroundColor: '#A09080',
+    backgroundColor: '#ffffffff',
     paddingTop: 20,
     paddingBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
   },
-  headerText: { color: '#FFFFFF', fontSize: 20, fontWeight: '500' },
-  content: { flex: 1, padding: 20, justifyContent: 'center', alignItems: 'center' },
-  userInfo: { fontSize: 16, color: '#333333', marginBottom: 20 },
+  headerText: { 
+    color: '#000000ff',
+    fontSize: 20, 
+    fontWeight: '500' 
+  },
+  content: { 
+    flex: 1, 
+    padding: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  userInfo: { 
+    fontSize: 16, 
+    color: '#333333', 
+    marginBottom: 20 
+  },
   logoutButton: {
     backgroundColor: '#A09080',
     paddingVertical: 12,
@@ -54,13 +67,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoutButtonDisabled: { backgroundColor: '#CCCCCC' },
-  logoutButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  logoutButtonDisabled: { 
+    backgroundColor: '#CCCCCC' 
+  },
+  logoutButtonText: { 
+    color: '#FFFFFF', 
+    fontSize: 16, 
+    fontWeight: '600' },
 });
 
-export default SettingsScreen;*/
+export default SettingsScreen;
 
-import { router } from 'expo-router';
+/*import { router } from 'expo-router';
 import React from 'react';
 import { View, Text, Button } from 'react-native';
 
@@ -76,4 +94,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default Settings;*/
