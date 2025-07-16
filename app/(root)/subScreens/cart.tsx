@@ -88,12 +88,12 @@ const CartScreen = () => {
 
   const onGestureEvent = (event: any) => {
     const { translationY } = event.nativeEvent;
-    translateY.value = translationY > 0 ? translationY : 0; // Prevent sliding up too far
+    translateY.value = translationY > 0 ? translationY : 0;
   };
 
   const onHandlerStateChange = (event: any) => {
-    if (event.nativeEvent.state === 5) { // Gesture ended
-      translateY.value = withSpring(0); // Snap back to original position
+    if (event.nativeEvent.state === 5) { 
+      translateY.value = withSpring(0); 
     }
   };
 

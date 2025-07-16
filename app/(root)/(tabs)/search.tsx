@@ -7,16 +7,6 @@ import { fetchMenuData } from '@/redux/actions/menuActions';
 import { MenuItem } from '@/models/MenuItem';
 //import { addToCart } from '@/redux/slices/cartSlice';
 
-/*interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  image?: string;
-  category: string;
-  allergies?: string[];
-  availability: boolean;
-}*/
 
 const SearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,14 +20,14 @@ const SearchScreen = () => {
   // Placeholder image URL
   const PLACEHOLDER_IMAGE = '../../../assets/images/Food1.png';
 
-  // Fetch menu data on mount if not already loaded
+
   useEffect(() => {
     if (items.length === 0) {
       dispatch(fetchMenuData());
     }
   }, [dispatch, items.length]);
 
-  // Search functionality with debouncing
+
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
       if (searchQuery.trim() === "") {
@@ -48,7 +38,6 @@ const SearchScreen = () => {
 
       setIsSearching(true);
 
-      // Filter menu items by name only
       const filtered = items.filter(item =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -60,12 +49,12 @@ const SearchScreen = () => {
   }, [searchQuery, items]);
 
   const navigateToProductDetails = (item: MenuItem) => {
-    console.log('Navigating to ProductDetails with item:', {
+    /*console.log('Navigating to ProductDetails with item:', {
       id: item.id,
       name: item.name,
       image: item.image || 'No image provided',
       price: item.price || 'No price provided',
-    });
+    });*/
     router.push({
       pathname: "/subScreens/foodDetail",
       params: {
@@ -150,7 +139,7 @@ const SearchScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Browse</Text>
@@ -165,7 +154,6 @@ const SearchScreen = () => {
         </View>
       </View>
 
-      {/* Search Input */}
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <TextInput
