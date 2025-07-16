@@ -6,7 +6,7 @@ import httpInterceptor from '@/services/http-interceptor';
 export const loginUser =
   (credentials: { email: string; password: string }, callback: (success: boolean, errorStatus: number, errorMessage: string) => void) =>
   async (dispatch: AppDispatch) => {
-    console.log('Login attempt with:', credentials);
+    //console.log('Login attempt with:', credentials);
     try {
       await AsyncStorage.setItem('x-tenant-code', environment.x_tenant_code);
 
@@ -31,7 +31,7 @@ export const loginUser =
         }
       );
 
-      console.log('Login response:', response.data);
+      //console.log('Login response:', response.data);
       if (response.data && response.data.accessToken) {
         const userData = {
           access_token: response.data.accessToken,

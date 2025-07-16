@@ -1,100 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, FlatList, Alert, Image } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, FlatList, Alert, Image } from 'react-native';
+import { useSelector, useDispatch } from 'react-redux';
+import { useRouter } from 'expo-router';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { RootState, AppDispatch } from '@/redux/store';
+import { addToCart, updateQuantity, removeItem, clearCart,CartItem  } from '@/redux/slices/cartSlice';
 
-interface CartItem {
+/*interface CartItem {
   id: string;
   name: string;
-  price: string; // Changed to string to match ProductDetailsScreen
+  price: string;
   quantity: number;
-  image?: string; // URL or local asset
-}
+  image?: string;
+}*/
 
 const CartScreen = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const translateY = useSharedValue(0); // For sliding panel animation
+  const PLACEHOLDER_IMAGE = '../../../assets/icons/shopping-cart.png';
 
-  // Placeholder image URL
-  const PLACEHOLDER_IMAGE = 'https://picsum.photos/300/200?random=1';
-
-  useEffect(() => {
-    // Get cart data from navigation params
-    if (params.cartData) {
-      try {
-        const parsedCartData = JSON.parse(params.cartData as string);
-        console.log('Parsed Cart Data:', parsedCartData); // Debug cart data
-        // Validate and convert price to string if needed
-        const updatedCartData = parsedCartData.map((item: any) => ({
-          ...item,
-          price: item.price ? String(item.price) : '0.00', // Ensure price is string
-          image: item.image || PLACEHOLDER_IMAGE, // Ensure image fallback
-        }));
-        setCartItems(updatedCartData);
-      } catch (error) {
-        console.error("Error parsing cart data:", error);
-      }
-    }
-  }, [params.cartData]);
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeItem(id);
+  const handleUpdateQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveItem(id);
       return;
     }
-    
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    dispatch(updateQuantity({ id, quantity }));
   };
 
-  const removeItem = (id: string) => {
+  const handleRemoveItem = (id: string) => {
     Alert.alert(
-      "Remove Item",
-      "Are you sure you want to remove this item from your cart?",
+      'Remove Item',
+      'Are you sure you want to remove this item from your cart?',
       [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Remove", 
-          style: "destructive",
-          onPress: () => {
-            setCartItems(prev => prev.filter(item => item.id !== id));
-          }
-        }
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => dispatch(removeItem(id)),
+        },
       ]
     );
   };
 
   const getTotalAmount = () => {
     return cartItems
-      .reduce((total, item) => {
-        const price = parseFloat(item.price) || 0; // Convert price to number
+      .reduce((total: number, item: CartItem) => {
+        const price = parseFloat(item.price) || 0;
         return total + price * item.quantity;
       }, 0)
       .toFixed(2);
   };
 
   const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
+    return cartItems.reduce((total: number, item: CartItem) => total + item.quantity, 0);
   };
 
   const goBack = () => {
-    // Navigate back to MenuScreen or home
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push('./(tabs)/index'); 
+      router.push('./(tabs)/index');
     }
   };
 
   const proceedToCheckout = () => {
     if (cartItems.length === 0) {
-      Alert.alert("Empty Cart", "Please add items to your cart before proceeding to checkout.");
+      Alert.alert('Empty Cart', 'Please add items to your cart before proceeding to checkout.');
       return;
     }
-    
     router.push({
       pathname: '/subScreens/checkout',
       params: {
@@ -105,47 +81,58 @@ const CartScreen = () => {
     });
   };
 
+  // Animation for sliding panel
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: withSpring(translateY.value) }],
+  }));
+
+  const onGestureEvent = (event: any) => {
+    const { translationY } = event.nativeEvent;
+    translateY.value = translationY > 0 ? translationY : 0; // Prevent sliding up too far
+  };
+
+  const onHandlerStateChange = (event: any) => {
+    if (event.nativeEvent.state === 5) { // Gesture ended
+      translateY.value = withSpring(0); // Snap back to original position
+    }
+  };
+
   const renderCartItem = ({ item }: { item: CartItem }) => {
-    const price = parseFloat(item.price) || 0; // Convert price to number
+    const price = parseFloat(item.price) || 0;
     return (
       <View style={styles.cartItemContainer}>
         <View style={styles.itemImageContainer}>
           <Image
-            source={item.image ? { uri: item.image } : { uri: PLACEHOLDER_IMAGE }}
+            source={{ uri: item.image || PLACEHOLDER_IMAGE }}
             style={styles.itemImage}
             resizeMode="cover"
-            onError={(error) => console.error('Cart Item Image Error:', item.name, error.nativeEvent.error, item.image)}
+            onError={(error) => console.error('Cart Item Image Error:', item.name, error.nativeEvent.error)}
           />
         </View>
-        
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>{item.name}</Text>
           <Text style={styles.itemPrice}>Rs. {price.toFixed(2)}</Text>
         </View>
-        
         <View style={styles.quantityControls}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quantityButton}
-            onPress={() => updateQuantity(item.id, item.quantity - 1)}
+            onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}
           >
             <Text style={styles.quantityButtonText}>-</Text>
           </TouchableOpacity>
-          
           <Text style={styles.quantityText}>{item.quantity}</Text>
-          
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.quantityButton}
-            onPress={() => updateQuantity(item.id, item.quantity + 1)}
+            onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}
           >
             <Text style={styles.quantityButtonText}>+</Text>
           </TouchableOpacity>
         </View>
-        
         <View style={styles.itemTotal}>
           <Text style={styles.itemTotalText}>Rs. {(price * item.quantity).toFixed(2)}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.removeButton}
-            onPress={() => removeItem(item.id)}
+            onPress={() => handleRemoveItem(item.id)}
           >
             <Text style={styles.removeButtonText}>×</Text>
           </TouchableOpacity>
@@ -156,53 +143,49 @@ const CartScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={goBack}>
           <Image source={require('../../../assets/icons/back.png')} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Your Cart</Text>
-        <View style={styles.headerSpacer} />
       </View>
-
-      {/* Cart Items */}
-      {cartItems.length === 0 ? (
-        <View style={styles.emptyCartContainer}>
-          <Text style={styles.emptyCartText}>Your cart is empty</Text>
-          <TouchableOpacity style={styles.continueShoppingButton} onPress={goBack}>
-            <Text style={styles.continueShoppingButtonText}>Continue Shopping</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          <FlatList
-            data={cartItems}
-            renderItem={renderCartItem}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.cartList}
-            showsVerticalScrollIndicator={false}
-          />
-          
-          {/* Cart Summary */}
-          <View style={styles.cartSummary}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Items:</Text>
-              <Text style={styles.summaryValue}>{getTotalItems()}</Text>
+      <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
+        <Animated.View style={[styles.cartPanel, animatedStyle]}>
+          {cartItems.length === 0 ? (
+            <View style={styles.emptyCartContainer}>
+              <Text style={styles.emptyCartText}>Your cart is empty</Text>
+              <TouchableOpacity style={styles.continueShoppingButton} onPress={goBack}>
+                <Text style={styles.continueShoppingButtonText}>Continue Shopping</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Amount:</Text>
-              <Text style={styles.summaryValue}>Rs. {getTotalAmount()}</Text>
-            </View>
-          </View>
-          
-          {/* Checkout Button */}
-          <View style={styles.checkoutContainer}>
-            <TouchableOpacity style={styles.checkoutButton} onPress={proceedToCheckout}>
-              <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+          ) : (
+            <>
+              <FlatList
+                data={cartItems}
+                renderItem={renderCartItem}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.cartList}
+                showsVerticalScrollIndicator={false}
+              />
+              <View style={styles.cartSummary}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Total Items:</Text>
+                  <Text style={styles.summaryValue}>{getTotalItems()}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Total Amount:</Text>
+                  <Text style={styles.summaryValue}>Rs. {getTotalAmount()}</Text>
+                </View>
+              </View>
+              <View style={styles.checkoutContainer}>
+                <TouchableOpacity style={styles.checkoutButton} onPress={proceedToCheckout}>
+                  <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </Animated.View>
+      </PanGestureHandler>
     </SafeAreaView>
   );
 };
@@ -237,8 +220,12 @@ const styles = StyleSheet.create({
     color: '#333333',
     textAlign: 'center',
   },
-  headerSpacer: {
-    width: 40,
+  cartPanel: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
   },
   cartList: {
     paddingHorizontal: 20,
@@ -385,10 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,

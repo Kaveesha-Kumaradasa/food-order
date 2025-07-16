@@ -38,17 +38,17 @@ httpInterceptor.interceptors.response.use(
 export default httpInterceptor;*/
 
 
-
-
-// src/services/http-interceptor.ts
 import axios from 'axios';
-import { environment } from '@/environments';
+import { environment } from '@/environments/index';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const httpInterceptor = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Access-Control-Allow-Origin': "*",
+    Device: "Mobile App",
+    "X-tenant-code": "subway"
   },
   timeout: 10000,
 });

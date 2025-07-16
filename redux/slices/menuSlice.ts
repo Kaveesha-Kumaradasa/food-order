@@ -1,6 +1,22 @@
 // src/redux/slices/menuSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MenuItem, Category } from '@/models/MenuItem';
+//import { MenuItem, Category } from '@/models/MenuItem';
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  image?: string;
+  category: string;
+  allergies?: string[];
+  availability: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface MenuState {
   items: MenuItem[];

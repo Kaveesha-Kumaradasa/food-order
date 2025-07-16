@@ -19,10 +19,10 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            backgroundColor: '#FFFFFF', // Set tab bar background to white
+            backgroundColor: '#FFFFFF', 
           },
           default: {
-            backgroundColor: '#FFFFFF', // Set tab bar background to white for other platforms
+            backgroundColor: '#A09080', 
           },
         }),
       }}>

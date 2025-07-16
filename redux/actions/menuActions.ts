@@ -10,12 +10,12 @@ export const fetchMenuData = () => async (dispatch: any, getState: () => RootSta
   dispatch(setError(null));
   try {
     const endpoint = '/webshop/main-menu/65/categories/webshop-brand/1/shop/2';
-    console.log('Fetching menu from:', `${environment.pos.api_base_url}${endpoint}`);
+    //console.log('Fetching menu from:', `${environment.pos.api_base_url}${endpoint}`);
     const response = await httpInterceptor.get(endpoint, {
       headers: { 'account_brand': environment.BRAND_ID },
     });
 
-    console.log('Raw API Response:', JSON.stringify(response.data, null, 2)); // Log raw response
+    //console.log('Raw API Response:', JSON.stringify(response.data, null, 2)); // Log raw response
 
     const responseData = response.data?.data || {};
     const categories: Category[] = [];
@@ -33,7 +33,7 @@ export const fetchMenuData = () => async (dispatch: any, getState: () => RootSta
         items.forEach((item: any) => {
           const image = item.image_url || (item.images?.find((img: any) => img.size === 'medium')?.path) || FALLBACK_IMAGE;
           const price = item.price ? String(item.price) : '0.00'; // Ensure price is string
-          console.log(`Item: ${item.title}, Image: ${image}, Price: ${price}`);
+          //console.log(`Item: ${item.title}, Image: ${image}, Price: ${price}`);
           menuItems.push({
             id: item.id.toString(),
             name: item.title,

@@ -4,8 +4,10 @@ import { useRouter } from "expo-router";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
 import { fetchMenuData } from '@/redux/actions/menuActions';
+import { MenuItem } from '@/models/MenuItem';
+//import { addToCart } from '@/redux/slices/cartSlice';
 
-interface MenuItem {
+/*interface MenuItem {
   id: string;
   name: string;
   description: string;
@@ -14,7 +16,7 @@ interface MenuItem {
   category: string;
   allergies?: string[];
   availability: boolean;
-}
+}*/
 
 const SearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +25,7 @@ const SearchScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { items, loading, error } = useSelector((state: RootState) => state.menu);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
 
   // Placeholder image URL
   const PLACEHOLDER_IMAGE = '../../../assets/images/Food1.png';
@@ -79,26 +82,37 @@ const SearchScreen = () => {
   };
 
   const navigateToCart = () => {
-    router.push({
-      pathname: "/subScreens/cart",
-      params: {
-        cartData: JSON.stringify([]),
-        totalItems: "0",
-        totalAmount: "0",
-      },
-    });
+    router.push('/subScreens/cart');
+  };
+
+  /*const handleAddToCart = (item: MenuItem) => {
+    dispatch(addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price.replace('Rs. ', '') || '0.00',
+      quantity: 1,
+      image: item.image || PLACEHOLDER_IMAGE,
+    }));
+  };*/
+
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
   const renderMenuItem = ({ item }: { item: MenuItem }) => (
-    <TouchableOpacity 
-      style={styles.menuItem}
-      onPress={() => navigateToProductDetails(item)}
-    >
-      <View style={styles.menuItemContent}>
+    <View style={[styles.menuItem, !item.availability && styles.unavailableItem]}>
+      <TouchableOpacity
+        style={styles.menuItemContent}
+        onPress={() => item.availability && navigateToProductDetails(item)}
+        disabled={!item.availability}
+      >
         <View style={styles.menuItemInfo}>
           <Text style={styles.menuItemName}>{item.name}</Text>
           <Text style={styles.menuItemDescription}>{item.description}</Text>
           <Text style={styles.menuItemPrice}>Rs. {item.price}</Text>
+          {!item.availability && (
+            <Text style={styles.unavailableText}>Currently Unavailable</Text>
+          )}
         </View>
         <View style={styles.menuItemImageContainer}>
           <Image
@@ -108,8 +122,16 @@ const SearchScreen = () => {
             onError={(error) => console.error('Search Item Image Error:', item.name, error.nativeEvent.error, item.image)}
           />
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      {/*{item.availability && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => handleAddToCart(item)}
+        >
+          <Text style={styles.addButtonText}>Add to Cart</Text>
+        </TouchableOpacity>
+      )}*/}
+    </View>
   );
 
   const renderEmptyState = () => (
@@ -134,6 +156,11 @@ const SearchScreen = () => {
           <Text style={styles.headerTitle}>Browse</Text>
           <TouchableOpacity style={styles.cartIcon} onPress={navigateToCart}>
             <Image source={require("../../../assets/icons/shopping-cart.png")} style={styles.cartIconImage} />
+            {getTotalItems() > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{getTotalItems()}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -199,6 +226,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
   },
+  cartIcon: {
+    position: 'relative',
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#A09080',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   searchContainer: {
     paddingHorizontal: 20,
     paddingVertical: 15,
@@ -245,6 +300,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     padding: 15,
   },
+  unavailableItem: {
+    backgroundColor: '#E0E0E0',
+    opacity: 0.6,
+  },
   menuItemContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -271,6 +330,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
   },
+  unavailableText: {
+    fontSize: 12,
+    color: '#FF0000',
+    marginTop: 4,
+  },
   menuItemImageContainer: {
     width: 60,
     height: 60,
@@ -293,6 +357,19 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 12,
   },
+  addButton: {
+    backgroundColor: '#A09080',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: 'flex-end',
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
@@ -305,17 +382,6 @@ const styles = StyleSheet.create({
     color: '#999999',
     textAlign: 'center',
     lineHeight: 24,
-  },
-  cartIcon: {
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cartIconImage: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
   },
 });
 
