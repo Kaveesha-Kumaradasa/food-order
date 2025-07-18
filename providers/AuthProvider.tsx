@@ -30,7 +30,8 @@ const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isAuthChecked, setIsAuthChecked] = useState(false);  const [tenantCode, setTenantCode] = useState<string | null>(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);  
+  const [tenantCode, setTenantCode] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -90,13 +91,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (storedUser) {
               const userData = JSON.parse(storedUser);
               const updatedUserData: User = {
-                email: userData.email || "", // Extract email from stored user data
+                email: userData.email || "", 
               };
               loadTenantCode();
               setUser(updatedUserData);
               setIsLoggingIn(false);
               callback(true, undefined, undefined);
-              router.push("/(root)/(tabs)"); // Navigate to home tab after successful login
+              router.push("/(root)/(tabs)"); 
             } else {
               setIsLoggingIn(false);
               callback(false, "FETCH_ERROR", "No user data stored after login");
@@ -152,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTenantCode(null);
         setErrorMessage(null);
         setIsLoggingIn(false);
-        router.replace("/auth/welcome"); // Navigate to welcome screen after logout
+        router.replace("/auth/welcome"); 
       }));
     } catch (error) {
       console.error("Error during logout:", error);

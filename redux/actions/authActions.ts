@@ -40,8 +40,6 @@ export const loginUser =
         await AsyncStorage.setItem('user', JSON.stringify(userData));
         dispatch({ type: 'auth/loginUser', payload: userData });
         callback(true, 0, '');
-        // Navigate to home tab after successful login
-        // This should be handled in the UI callback
       } else {
         callback(false, 0, 'No access token received. Response: ' + JSON.stringify(response.data));
       }

@@ -4,7 +4,7 @@
     "slug": "food-order-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/food-app-icon.png",
     "scheme": "foodorderapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -12,8 +12,10 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.delivergate.demoapp",
+      "icon": "./assets/images/food-app-icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/food-app-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -21,14 +23,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/food-app-icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/food-app-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -37,6 +39,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "37b9d8f6-6609-4505-8a33-563b1d49b190"
+      }
     }
   }
 }

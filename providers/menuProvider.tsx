@@ -16,10 +16,10 @@ export const MenuProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.menu);
 
-  // Fetch data only once on mount
+
   useEffect(() => {
     dispatch(fetchMenuData());
-  }, [dispatch]); // Empty dependency array ensures it runs only once
+  }, [dispatch]);
 
   const refreshMenu = () => {
     dispatch(fetchMenuData());

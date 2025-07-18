@@ -13,6 +13,8 @@ import store from '@/redux/store';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { MenuProvider } from '@/providers/menuProvider';
 
+
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -34,29 +36,31 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <AuthProvider>
-        <MenuProvider>
-          <SafeAreaProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <SafeAreaView style={{ flex: 1 }}>
-                <StatusBar
-                  barStyle={colorScheme === 'dark' ? 'dark-content' : 'light-content'}
-                  backgroundColor="#FFFFFF" // Match white tab bar
-                  translucent={false} // Opaque status bar
-                />
-                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      gestureEnabled: false,
-                    }}
+        <AuthProvider>
+          <MenuProvider>
+            <SafeAreaProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <SafeAreaView style={{ flex: 1 }}>
+                  <StatusBar
+                    barStyle={colorScheme === 'dark' ? 'dark-content' : 'light-content'}
+                    backgroundColor="#FFFFFF" // Match white tab bar
+                    translucent={false} // Opaque status bar
                   />
-                </ThemeProvider>
-              </SafeAreaView>
-            </GestureHandlerRootView>
-          </SafeAreaProvider>
-        </MenuProvider>
-      </AuthProvider>
+                  <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                    <Stack
+                      initialRouteName="SplashScreen"
+                      screenOptions={{
+                        headerShown: false,
+                        gestureEnabled: false,
+                      }}
+                    >
+                    </Stack>
+                  </ThemeProvider>
+                </SafeAreaView>
+              </GestureHandlerRootView>
+            </SafeAreaProvider>
+          </MenuProvider>
+        </AuthProvider>
     </Provider>
-  );
-}
+  )
+};
