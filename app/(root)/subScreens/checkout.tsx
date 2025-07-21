@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, TextInput, Alert } from 'react-native';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { ScrollView } from '@/components/ui/scroll-view';
+import { Input } from '@/components/ui/input';
+import { InputField } from '@/components/ui/input';
+import { HStack } from '@/components/ui/hstack';
+import { VStack } from '@/components/ui/vstack';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Alert } from 'react-native';
 
 interface CartItem {
   id: string;
@@ -19,7 +28,7 @@ const CheckoutScreen = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addressTitle, setAddressTitle] = useState('');
   const [addressDetails, setAddressDetails] = useState('');
-  const [selectedPayment, setSelectedPayment] = useState<string>('1'); // Store payment method ID
+  const [selectedPayment, setSelectedPayment] = useState<string>('1');
   const router = useRouter();
   const params = useLocalSearchParams();
 
@@ -37,7 +46,7 @@ const CheckoutScreen = () => {
         console.error('Error parsing cart data:', error);
       }
     }
-    setSelectedPayment('1'); // Default to first payment method
+    setSelectedPayment('1');
   }, [params.cartData]);
 
   const getTotalAmount = () => {
@@ -64,214 +73,204 @@ const CheckoutScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Box
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 15,
+          borderBottomWidth: 1,
+          borderBottomColor: '#F0F0F0',
+        }}
+      >
+        <Pressable
+          style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
+          onPress={goBack}
+        >
+          <Text style={{ fontSize: 24, color: '#333333' }}>←</Text>
+        </Pressable>
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 18,
+            fontWeight: '600',
+            color: '#333333',
+            textAlign: 'center',
+          }}
+        >
+          Checkout
+        </Text>
+        <Box style={{ width: 40 }} />
+      </Box>
 
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
+      <ScrollView style={{ flex: 1 }}>
+        <Box
+          style={{
+            backgroundColor: '#F8F8F8',
+            marginHorizontal: 20,
+            marginVertical: 10,
+            padding: 15,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333333', marginBottom: 10 }}>
+            Order Summary
+          </Text>
           {cartItems.map((item) => (
-            <View key={item.id} style={styles.orderItem}>
-              <Text style={styles.orderItemName}>{item.name}</Text>
-              <Text style={styles.orderItemPrice}>
+            <HStack
+              key={item.id}
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingVertical: 8,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: '500', color: '#333333', flex: 1 }}>
+                {item.name}
+              </Text>
+              <Text style={{ fontSize: 14, color: '#666666', marginHorizontal: 10 }}>
                 Rs. {parseFloat(item.price).toFixed(2)} x {item.quantity}
               </Text>
-              <Text style={styles.orderItemTotal}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#333333' }}>
                 Rs. {(parseFloat(item.price) * item.quantity).toFixed(2)}
               </Text>
-            </View>
+            </HStack>
           ))}
-        </View>
+        </Box>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery Address</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Address Title (e.g., Home)"
-            value={addressTitle}
-            onChangeText={setAddressTitle}
-          />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Full Address"
-            value={addressDetails}
-            onChangeText={setAddressDetails}
-          />
-        </View>
+        <Box
+          style={{
+            backgroundColor: '#F8F8F8',
+            marginHorizontal: 20,
+            marginVertical: 10,
+            padding: 15,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333333', marginBottom: 10 }}>
+            Delivery Address
+          </Text>
+          <Input
+            style={{
+              borderWidth: 1,
+              borderColor: '#E0E0E0',
+              borderRadius: 8,
+              padding: 10,
+              marginBottom: 10,
+            }}
+          >
+            <InputField
+              placeholder="Address Title (e.g., Home)"
+              value={addressTitle}
+              onChangeText={setAddressTitle}
+              style={{ fontSize: 16, color: '#333333' }}
+            />
+          </Input>
+          <Input
+            style={{
+              borderWidth: 1,
+              borderColor: '#E0E0E0',
+              borderRadius: 8,
+              padding: 10,
+              marginBottom: 10,
+            }}
+          >
+            <InputField
+              placeholder="Full Address"
+              value={addressDetails}
+              onChangeText={setAddressDetails}
+              style={{ fontSize: 16, color: '#333333' }}
+            />
+          </Input>
+        </Box>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
+        <Box
+          style={{
+            backgroundColor: '#F8F8F8',
+            marginHorizontal: 20,
+            marginVertical: 10,
+            padding: 15,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333333', marginBottom: 10 }}>
+            Payment Method
+          </Text>
           {paymentMethods.map((payment) => (
-            <TouchableOpacity
+            <Pressable
               key={payment.id}
-              style={[
-                styles.paymentOption,
-                selectedPayment === payment.id && styles.paymentOptionSelected,
-              ]}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 10,
+                borderRadius: 8,
+                marginBottom: 8,
+                backgroundColor: selectedPayment === payment.id ? '#A09080' : '#FFFFFF',
+                borderWidth: 1,
+                borderColor: selectedPayment === payment.id ? '#A09080' : '#E0E0E0',
+              }}
               onPress={() => setSelectedPayment(payment.id)}
             >
-
-              <Text style={styles.paymentTitle}>{payment.title}</Text>
-            </TouchableOpacity>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: '#333333' }}>
+                {payment.title}
+              </Text>
+            </Pressable>
           ))}
-        </View>
+        </Box>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Bill Summary</Text>
-          <View style={styles.billRow}>
-            <Text style={styles.billLabel}>Total Amount</Text>
-            <Text style={styles.billValue}>Rs. {getTotalAmount()}</Text>
-          </View>
-        </View>
+        <Box
+          style={{
+            backgroundColor: '#F8F8F8',
+            marginHorizontal: 20,
+            marginVertical: 10,
+            padding: 15,
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333333', marginBottom: 10 }}>
+            Bill Summary
+          </Text>
+          <HStack
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              paddingVertical: 6,
+            }}
+          >
+            <Text style={{ fontSize: 16, color: '#666666' }}>Total Amount</Text>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#333333' }}>
+              Rs. {getTotalAmount()}
+            </Text>
+          </HStack>
+        </Box>
       </ScrollView>
 
-      <View style={styles.checkoutContainer}>
-        <TouchableOpacity style={styles.checkoutButton} onPress={placeOrder}>
-          <Text style={styles.checkoutButtonText}>
+      <Box
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 20,
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <Pressable
+          style={{
+            backgroundColor: '#A09080',
+            height: 50,
+            borderRadius: 25,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={placeOrder}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '600' }}>
             Place Order • Rs. {getTotalAmount()}
           </Text>
-        </TouchableOpacity>
-      </View>
+        </Pressable>
+      </Box>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: '#333333',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    width: 40,
-  },
-  scrollContainer: {
-    flex: 1,
-  },
-  section: {
-    backgroundColor: '#F8F8F8',
-    marginHorizontal: 20,
-    marginVertical: 10,
-    padding: 15,
-    borderRadius: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 10,
-  },
-  orderItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  orderItemName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333333',
-    flex: 1,
-  },
-  orderItemPrice: {
-    fontSize: 14,
-    color: '#666666',
-    marginHorizontal: 10,
-  },
-  orderItemTotal: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    color: '#333333',
-    marginBottom: 10,
-  },
-  paymentOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  paymentOptionSelected: {
-    backgroundColor: '#A09080',
-    borderColor: '#A09080',
-  },
-  paymentTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333333',
-  },
-  billRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  billLabel: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  billValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  checkoutContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  checkoutButton: {
-    backgroundColor: '#A09080',
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});
 
 export default CheckoutScreen;

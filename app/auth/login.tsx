@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
+import { Box } from "@/components/ui/box";
+import { Text } from "@/components/ui/text";
+import { Input, InputField } from "@/components/ui/input";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Image } from "@/components/ui/image";
+import { VStack } from "@/components/ui/vstack";
+import { HStack } from "@/components/ui/hstack";
+import { Center } from "@/components/ui/center";
+
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -43,7 +51,7 @@ const LoginScreen = () => {
           if (success) {
             setLoginFailed(false);
             setErrorMessage("");
-            router.replace("/(root)/(tabs)"); // Navigate to home tab on success
+            router.replace("/(root)/(tabs)");
           } else {
             setLoginFailed(true);
             setErrorMessage(errorMessage || "Login failed");
@@ -54,138 +62,100 @@ const LoginScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../../assets/images/Food1.png")} // Adjust path as needed
-            style={{ width: 28, height: 28, resizeMode: "contain" }}
-            accessibilityLabel="logo"
-          />
-        </View>
-        <Text style={styles.headerText}>Login</Text>
-      </View>
-
-      <View style={styles.formContainer}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, errors.email ? styles.inputError : null]}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholder="Enter your email"
-            placeholderTextColor="#999"
-            autoFocus
-          />
-          {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={[styles.input, errors.password ? styles.inputError : null]}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="Enter your password"
-            placeholderTextColor="#999"
-          />
-          {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
-        </View>
-
-        {loginFailed && errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-
-        <TouchableOpacity
-          style={[styles.loginButton, isLoggingIn ? styles.loginButtonDisabled : null]}
-          onPress={handleLogin}
-          disabled={isLoggingIn}
+      <Box className="flex-1 bg-white">
+        {/* Header */}
+        <Box
+          className="bg-[#A09080] pt-5 pb-10 rounded-b-3xl items-center justify-center min-h-[140px]"
         >
-          <Text style={styles.loginButtonText}>{isLoggingIn ? "Logging in..." : "Login"}</Text>
-        </TouchableOpacity>
+          <Box
+            className="w-12 h-12 rounded-full bg-white justify-center items-center mb-2"
+          >
+            <Image
+              source={require("../../assets/images/Food1.png")}
+              size="xs"
+              className="w-7 h-7"
+              resizeMode="contain"
+              alt="logo"
+            />
+          </Box>
+          <Text className="text-white text-xl font-medium">Login</Text>
+        </Box>
 
-        <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>Dont have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/auth/signup")}>
-            <Text style={styles.signUpLink}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+        {/* Form */}
+        <VStack className="flex-1 px-8 pt-10 space-y-6">
+          {/* Email Input */}
+          <VStack className="space-y-1">
+            <Text className="text-base text-gray-900 font-normal">Email</Text>
+            <Input
+              className={`h-12 border ${errors.email ? "border-red-500" : "border-gray-300"} rounded-lg`}
+            >
+              <InputField
+                className="px-4 text-base text-gray-900 placeholder:text-gray-500"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="Enter your email"
+                autoFocus
+              />
+            </Input>
+            {errors.email ? (
+              <Text className="text-red-500 text-xs mt-1">{errors.email}</Text>
+            ) : null}
+          </VStack>
+
+          {/* Password Input */}
+          <VStack className="space-y-1">
+            <Text className="text-base text-gray-900 font-normal">Password</Text>
+            <Input
+              className={`h-12 border ${errors.password ? "border-red-500" : "border-gray-300"} rounded-lg`}
+            >
+              <InputField
+                className="px-4 text-base text-gray-900 placeholder:text-gray-500"
+                value={password}
+                onChangeText={setPassword}
+                type="password"
+                placeholder="Enter your password"
+              />
+            </Input>
+            {errors.password ? (
+              <Text className="text-red-500 text-xs mt-1">{errors.password}</Text>
+            ) : null}
+          </VStack>
+
+          {loginFailed && errorMessage && (
+            <Text className="text-red-500 text-sm mt-2">{errorMessage}</Text>
+          )}
+
+          {/* Login Button */}
+          <Button
+            className={`h-12 ${isLoggingIn ? "bg-gray-300" : "bg-[#A09080]"} rounded-lg justify-center items-center mt-4`}
+            isDisabled={isLoggingIn}
+            onPress={handleLogin}
+          >
+            <ButtonText className="text-white text-lg font-semibold">
+              {isLoggingIn ? "Logging in..." : "Login"}
+            </ButtonText>
+          </Button>
+
+          {/* Sign Up Link */}
+          <HStack className="justify-center items-center mt-4">
+            <Text className="text-gray-500 text-sm">
+              Don't have an account?{" "}
+            </Text>
+            <Button
+              variant="link"
+              onPress={() => router.push("/auth/signup")}
+              className="p-0"
+            >
+              <ButtonText className="text-[#A09080] text-sm font-semibold">
+                Sign Up
+              </ButtonText>
+            </Button>
+          </HStack>
+        </VStack>
+      </Box>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
-  header: {
-    backgroundColor: "#A09080",
-    paddingTop: 20,
-    paddingBottom: 40,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 140,
-  },
-  logoContainer: {
-    width: 45,
-    height: 45,
-    borderRadius: 22,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  headerText: { color: "#FFFFFF", fontSize: 20, fontWeight: "500" },
-  formContainer: { flex: 1, paddingHorizontal: 30, paddingTop: 40 },
-  inputGroup: { marginBottom: 25 },
-  label: { fontSize: 16, color: "#333333", marginBottom: 8, fontWeight: "400" },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#CCCCCC",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    backgroundColor: "#FFFFFF",
-  },
-  inputError: { borderColor: "#FF0000" },
-  errorText: { color: "#FF0000", fontSize: 12, marginTop: 5 },
-  loginButton: {
-    backgroundColor: "#A09080",
-    height: 50,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  loginButtonDisabled: { backgroundColor: "#CCCCCC" },
-  loginButtonText: { color: "#FFFFFF", fontSize: 18, fontWeight: "600" },
-  signUpContainer: { flexDirection: "row", justifyContent: "center", alignItems: "center" },
-  signUpText: { color: "#666", fontSize: 14 },
-  signUpLink: { color: "#A09080", fontSize: 14, fontWeight: "600" },
-});
-
 export default LoginScreen;
-
-/*import { View, Text, Button } from "react-native";
-import { useRouter } from "expo-router";
-
-export default function Login() {
-  const router = useRouter();
-
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Login Screen</Text>
-      <Button
-        title="Go to register"
-        onPress={() => router.push("/auth/signup")}
-      />
-      <Button
-        title="Go to home"
-        onPress={() => router.push("/(root)/(tabs)")}
-      />
-    </View>
-  );
-}*/

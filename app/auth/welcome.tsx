@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView } from 'react-native';
+import { Button, ButtonText } from "@/components/ui/button"
 import { useRouter } from 'expo-router';
 
 const Welcome = () => {
@@ -11,7 +12,7 @@ const Welcome = () => {
         {/* Title */}
         <Text style={styles.title}>Welcome to</Text>
         <Text style={styles.title}>YumHub</Text>
-        
+
         {/* Food Image */}
         <View style={styles.imageContainer}>
           <Image
@@ -19,17 +20,23 @@ const Welcome = () => {
             style={styles.foodImage}
           />
         </View>
-        
+
+
+        <Button size="md" variant="solid" action="primary" 
+        onPress={() => router.push('/auth/login')}>
+          <ButtonText style={{ color: 'white' }}>Login</ButtonText>
+        </Button>
+
         {/* Login Button */}
-        <TouchableOpacity 
+        {/*<TouchableOpacity 
           style={styles.loginButton} 
           onPress={() => router.push('/auth/login')}
         >
           <Text style={styles.loginButtonText}>Login</Text>
-        </TouchableOpacity>
-        
+        </TouchableOpacity>*/}
+
         {/* Sign Up Link */}
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.push('/auth/signup')}
           style={styles.signUpContainer}
         >
@@ -68,8 +75,8 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 75,
   },
-  loginButton: {
-    backgroundColor: '#8B7355',
+  /*Button: {
+    bg: '#8B7355',
     paddingVertical: 16,
     paddingHorizontal: 80,
     borderRadius: 25,
@@ -77,11 +84,11 @@ const styles = StyleSheet.create({
     minWidth: 200,
     alignItems: 'center',
   },
-  loginButtonText: {
+  ButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
-  },
+  },*/
   signUpContainer: {
     alignItems: 'center',
   },

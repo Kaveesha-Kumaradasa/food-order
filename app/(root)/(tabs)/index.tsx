@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
+import { Box } from '@/components/ui/box';
+import { VStack } from '@/components/ui/vstack';
+import { HStack } from '@/components/ui/hstack';
+import { Text } from '@/components/ui/text';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { ScrollView } from '@/components/ui/scroll-view';
+import { Image } from '@/components/ui/image';
+import { Pressable } from '@/components/ui/pressable';
 import { useRouter } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { useMenu } from '@/providers/menuProvider';
@@ -16,12 +23,6 @@ const MenuScreen = () => {
   const router = useRouter();
 
   const navigateToProductDetails = (item: MenuItem) => {
-    /*console.log('Navigating to ProductDetails with item:', {
-      id: item.id,
-      name: item.name,
-      image: item.image || 'No image provided',
-    });*/
-    
     router.push({
       pathname: '/subScreens/foodDetail',
       params: {
@@ -56,286 +57,203 @@ const MenuScreen = () => {
   };
 
   const renderMenuItem = (item: MenuItem) => (
-    <View key={item.id} style={[styles.menuItem, !item.availability && styles.unavailableItem]}>
-      <TouchableOpacity
-        style={styles.menuItemContent}
+    <Box
+      key={item.id}
+      style={{
+        backgroundColor: item.availability ? '#F8F8F8' : '#E0E0E0',
+        borderRadius: 12,
+        marginBottom: 15,
+        padding: 15,
+        opacity: item.availability ? 1 : 0.6,
+      }}
+    >
+      <Pressable
         onPress={() => item.availability && navigateToProductDetails(item)}
         disabled={!item.availability}
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
       >
-        <View style={styles.menuItemInfo}>
-          <Text style={styles.menuItemName}>{item.name}</Text>
-          <Text style={styles.menuItemDescription}>{item.description}</Text>
-          <Text style={styles.menuItemPrice}>{item.price}</Text>
+        <VStack style={{ flex: 1 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#333333', marginBottom: 5 }}>
+            {item.name}
+          </Text>
+          <Text style={{ fontSize: 12, color: '#666666', marginBottom: 8, lineHeight: 16 }}>
+            {item.description}
+          </Text>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#333333' }}>
+            {item.price}
+          </Text>
           {item.allergies && item.allergies.length > 0 && (
-            <Text style={styles.menuItemAllergies}>Allergens: {item.allergies.join(', ')}</Text>
+            <Text style={{ fontSize: 12, color: '#FF4500', marginTop: 4 }}>
+              Allergens: {item.allergies.join(', ')}
+            </Text>
           )}
           {!item.availability && (
-            <Text style={styles.unavailableText}>Currently Unavailable</Text>
+            <Text style={{ fontSize: 12, color: '#FF0000', marginTop: 4 }}>
+              Currently Unavailable
+            </Text>
           )}
-        </View>
+        </VStack>
         {item.image && (
-          <Image source={{ uri: item.image }} style={styles.menuItemImage} resizeMode="contain" />
+          <Image
+            source={{ uri: item.image }}
+            style={{ width: 80, height: 80, borderRadius: 8 }}
+            alt={item.name}
+            resizeMode="contain"
+          />
         )}
-      </TouchableOpacity>
-    </View>
+      </Pressable>
+    </Box>
   );
 
   const filteredItems = items.filter((item) => item.category === activeCategory);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>YumHub</Text>
-          <TouchableOpacity style={[styles.cartIcon, { pointerEvents: 'auto' }]} onPress={navigateToCart}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Box
+        style={{
+          backgroundColor: '#FFFFFF',
+          paddingVertical: 15,
+          paddingHorizontal: 20,
+          borderBottomWidth: 1,
+          borderBottomColor: '#F0F0F0',
+        }}
+      >
+        <HStack style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333333' }}>
+            YumHub
+          </Text>
+          <Pressable
+            onPress={navigateToCart}
+            style={{ width: 30, height: 30, justifyContent: 'center', alignItems: 'center' }}
+          >
             <Image
               source={require('../../../assets/icons/shopping-cart.png')}
-              style={styles.cartIconImage}
+              style={{ width: 24, height: 24 }}
               resizeMode="contain"
+              alt="Cart"
             />
             {getTotalItems() > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{getTotalItems()}</Text>
-              </View>
+              <Box
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: '#A09080',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
+                  {getTotalItems()}
+                </Text>
+              </Box>
             )}
-          </TouchableOpacity>
-        </View>
-      </View>
+          </Pressable>
+        </HStack>
+      </Box>
 
-      <View style={styles.tabContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScrollContent}>
+      <Box
+        style={{
+          backgroundColor: '#FFFFFF',
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: '#F0F0F0',
+        }}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 15, alignItems: 'center' }}
+        >
           {loading ? (
-            <Text style={styles.loading}>Loading...</Text>
+            <Text style={{ textAlign: 'center', color: '#666666' }}>
+              Loading...
+            </Text>
           ) : error ? (
-            <>
-              <Text style={styles.error}>Error: {error}</Text>
-              <TouchableOpacity style={styles.refreshButton} onPress={refreshMenu}>
-                <Text style={styles.refreshText}>Try Again</Text>
-              </TouchableOpacity>
-            </>
+            <VStack style={{ alignItems: 'center' }}>
+              <Text style={{ color: '#FF0000', textAlign: 'center' }}>
+                Error: {error}
+              </Text>
+              <Pressable
+                style={{
+                  padding: 10,
+                  backgroundColor: '#A1CEDC',
+                  borderRadius: 8,
+                  marginTop: 10,
+                }}
+                onPress={refreshMenu}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                  Try Again
+                </Text>
+              </Pressable>
+            </VStack>
           ) : categories.length > 0 ? (
             categories.map((category: Category) => (
-              <TouchableOpacity
+              <Pressable
                 key={category.id}
-                style={[styles.tab, activeCategory === category.name && styles.activeTab]}
+                style={{
+                  paddingHorizontal: 18,
+                  paddingVertical: 10,
+                  marginHorizontal: 6,
+                  borderRadius: 25,
+                  backgroundColor: activeCategory === category.name ? '#A09080' : '#F8F8F8',
+                  minWidth: 80,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                 onPress={() => dispatch(setActiveCategory(category.name))}
               >
-                <Text style={[styles.tabText, activeCategory === category.name && styles.activeTabText]}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: activeCategory === category.name ? '#FFFFFF' : '#666666',
+                    fontWeight: '500',
+                  }}
+                >
                   {category.name}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))
           ) : (
-            <Text style={styles.noCategories}>No categories available</Text>
+            <Text style={{ textAlign: 'center', paddingHorizontal: 15, color: '#666666' }}>
+              No categories available
+            </Text>
           )}
           {!loading && !error && categories.length === 1 && categories[0].name === 'Sri Lankan' && (
-            <Text style={styles.warning}>
+            <Text style={{ textAlign: 'center', color: '#FFA500', fontStyle: 'italic', marginTop: 10 }}>
               Using mock data due to failed API request. Please check server configuration.
             </Text>
           )}
         </ScrollView>
-      </View>
+      </Box>
 
-      <ScrollView style={styles.menuContainer}>
+      <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}>
         {loading ? (
-          <Text style={styles.loading}>Loading menu...</Text>
+          <Text style={{ textAlign: 'center', color: '#666666' }}>
+            Loading menu...
+          </Text>
         ) : error ? (
-          <Text style={styles.error}>Error loading menu: {error}</Text>
+          <Text style={{ textAlign: 'center', color: '#FF0000' }}>
+            Error loading menu: {error}
+          </Text>
         ) : filteredItems.length > 0 ? (
           filteredItems.map(renderMenuItem)
         ) : (
-          <Text style={styles.noItems}>No items available for {activeCategory || ''}</Text>
+          <Text style={{ textAlign: 'center', color: '#666666' }}>
+            No items available for {activeCategory || ''}
+          </Text>
         )}
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  cartIcon: {
-    position: 'relative',
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cartIconImage: {
-    width: 24,
-    height: 24,
-  },
-  cartBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#A09080',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cartBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  tabContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  tabScrollContent: {
-    paddingHorizontal: 15,
-    alignItems: 'center',
-  },
-  tab: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    marginHorizontal: 6,
-    borderRadius: 25,
-    backgroundColor: '#F8F8F8',
-    minWidth: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeTab: {
-    backgroundColor: '#A09080',
-  },
-  tabText: {
-    fontSize: 14,
-    color: '#666666',
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#FFFFFF',
-  },
-  menuContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  menuItem: {
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
-    marginBottom: 15,
-    padding: 15,
-  },
-  unavailableItem: {
-    backgroundColor: '#E0E0E0',
-    opacity: 0.6,
-  },
-  menuItemContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  menuItemInfo: {
-    flex: 1,
-  },
-  menuItemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  menuItemDescription: {
-    fontSize: 12,
-    color: '#666666',
-    marginBottom: 8,
-    lineHeight: 16,
-  },
-  menuItemPrice: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  menuItemAllergies: {
-    fontSize: 12,
-    color: '#FF4500',
-    marginTop: 4,
-  },
-  unavailableText: {
-    fontSize: 12,
-    color: '#FF0000',
-    marginTop: 4,
-  },
-  menuItemImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginLeft: 10,
-  },
-  addButton: {
-    backgroundColor: '#A09080',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignSelf: 'flex-end',
-    marginTop: 10,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  loading: {
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  error: {
-    textAlign: 'center',
-    marginTop: 20,
-    color: '#FF0000',
-  },
-  refreshButton: {
-    padding: 10,
-    backgroundColor: '#A1CEDC',
-    borderRadius: 8,
-    marginTop: 10,
-    alignSelf: 'center',
-  },
-  refreshText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  noItems: {
-    textAlign: 'center',
-    marginTop: 20,
-    color: '#666666',
-  },
-  noCategories: {
-    textAlign: 'center',
-    paddingHorizontal: 15,
-    color: '#666666',
-  },
-  warning: {
-    textAlign: 'center',
-    marginTop: 20,
-    color: '#FFA500',
-    fontStyle: 'italic',
-  },
-});
 
 export default MenuScreen;

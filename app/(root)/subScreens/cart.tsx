@@ -1,387 +1,361 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, FlatList, Alert, Image } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { useRouter } from 'expo-router';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { RootState, AppDispatch } from '@/redux/store';
-import { addToCart, updateQuantity, removeItem, clearCart,CartItem  } from '@/redux/slices/cartSlice';
+import React, { useState, useEffect } from 'react';
+import { Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { addToCart as addToCartAction } from '@/redux/slices/cartSlice';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { FlatList } from '@/components/ui/flat-list';
+import { Image } from '@/components/ui/image';
+import { HStack } from '@/components/ui/hstack';
+import { VStack } from '@/components/ui/vstack';
 
-/*interface CartItem {
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  image?: string;
+  category: string;
+  allergies?: string[];
+  availability: boolean;
+  modifiers?: any[];
+}
+
+interface CartItem {
   id: string;
   name: string;
   price: string;
   quantity: number;
   image?: string;
-}*/
+}
 
-const CartScreen = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+const ProductDetailsScreen = () => {
+  const [quantity, setQuantity] = useState(1);
+  const [imageError, setImageError] = useState(false);
   const router = useRouter();
-  const translateY = useSharedValue(0); // For sliding panel animation
-  const PLACEHOLDER_IMAGE = '../../../assets/icons/shopping-cart.png';
+  const params = useLocalSearchParams();
+  const dispatch = useDispatch();
+  const cart = useSelector((state: RootState) => state.cart.items);
 
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(id);
-      return;
+  const PLACEHOLDER_IMAGE = '../../../assets/images/Food1.png';
+
+  const product: Product = {
+    id: (params.id as string) || '1',
+    name: (params.name as string) || 'Unknown Item',
+    description: (params.description as string) || 'No description available',
+    price: (params.price as string) || '0.00',
+    image: (params.image as string) || undefined,
+    category: (params.category as string) || 'Unknown',
+    allergies: params.allergies ? JSON.parse(params.allergies as string) : [],
+    availability: params.availability === 'true',
+    modifiers: params.modifiers ? JSON.parse(params.modifiers as string) : [],
+  };
+
+  useEffect(() => {
+    console.log('Product Details Params:', params);
+    console.log('Product Image URL:', product.image || 'No image provided');
+    if (!product.image) {
+      console.warn('No image URL provided for product:', product.name);
+      setImageError(true);
     }
-    dispatch(updateQuantity({ id, quantity }));
+  }, [product.image, product.name, params]);
+
+  const increaseQuantity = () => {
+    setQuantity((prev) => prev + 1);
   };
 
-  const handleRemoveItem = (id: string) => {
-    Alert.alert(
-      'Remove Item',
-      'Are you sure you want to remove this item from your cart?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => dispatch(removeItem(id)),
-        },
-      ]
-    );
-  };
-
-  const getTotalAmount = () => {
-    return cartItems
-      .reduce((total: number, item: CartItem) => {
-        const price = parseFloat(item.price) || 0;
-        return total + price * item.quantity;
-      }, 0)
-      .toFixed(2);
-  };
-
-  const getTotalItems = () => {
-    return cartItems.reduce((total: number, item: CartItem) => total + item.quantity, 0);
-  };
-
-  const goBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.push('./(tabs)/index');
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity((prev) => prev - 1);
     }
   };
 
-  const proceedToCheckout = () => {
-    if (cartItems.length === 0) {
-      Alert.alert('Empty Cart', 'Please add items to your cart before proceeding to checkout.');
-      return;
-    }
+  const navigateToCart = (updatedCart: CartItem[]) => {
     router.push({
-      pathname: '/subScreens/checkout',
+      pathname: '/subScreens/cart',
       params: {
-        cartData: JSON.stringify(cartItems),
-        totalItems: getTotalItems().toString(),
-        totalAmount: getTotalAmount(),
+        cartData: JSON.stringify(updatedCart),
+        totalItems: updatedCart.reduce((total, item) => total + item.quantity, 0).toString(),
+        totalAmount: updatedCart
+          .reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0)
+          .toFixed(2),
       },
     });
   };
 
-  // Animation for sliding panel
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: withSpring(translateY.value) }],
-  }));
-
-  const onGestureEvent = (event: any) => {
-    const { translationY } = event.nativeEvent;
-    translateY.value = translationY > 0 ? translationY : 0;
-  };
-
-  const onHandlerStateChange = (event: any) => {
-    if (event.nativeEvent.state === 5) { 
-      translateY.value = withSpring(0); 
+  const addToCart = () => {
+    if (!product.availability) {
+      Alert.alert('Unavailable', 'This item is currently unavailable.');
+      return;
     }
+
+    const newCartItem: CartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity,
+      image: product.image || PLACEHOLDER_IMAGE,
+    };
+
+    dispatch(addToCartAction(newCartItem));
+
+    Alert.alert(
+      'Added to Cart',
+      `${quantity} ${product.name}${quantity > 1 ? 's' : ''} added to your cart!`,
+      [
+        { text: 'Continue Shopping', style: 'cancel' },
+        {
+          text: 'View Cart',
+          onPress: () => navigateToCart([...cart, newCartItem]),
+        },
+      ]
+    );
+
+    setQuantity(1);
   };
 
-  const renderCartItem = ({ item }: { item: CartItem }) => {
-    const price = parseFloat(item.price) || 0;
-    return (
-      <View style={styles.cartItemContainer}>
-        <View style={styles.itemImageContainer}>
-          <Image
-            source={{ uri: item.image || PLACEHOLDER_IMAGE }}
-            style={styles.itemImage}
-            resizeMode="cover"
-            onError={(error) => console.error('Cart Item Image Error:', item.name, error.nativeEvent.error)}
-          />
-        </View>
-        <View style={styles.itemDetails}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemPrice}>Rs. {price.toFixed(2)}</Text>
-        </View>
-        <View style={styles.quantityControls}>
-          <TouchableOpacity
-            style={styles.quantityButton}
-            onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-          >
-            <Text style={styles.quantityButtonText}>-</Text>
-          </TouchableOpacity>
-          <Text style={styles.quantityText}>{item.quantity}</Text>
-          <TouchableOpacity
-            style={styles.quantityButton}
-            onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-          >
-            <Text style={styles.quantityButtonText}>+</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.itemTotal}>
-          <Text style={styles.itemTotalText}>Rs. {(price * item.quantity).toFixed(2)}</Text>
-          <TouchableOpacity
-            style={styles.removeButton}
-            onPress={() => handleRemoveItem(item.id)}
-          >
-            <Text style={styles.removeButtonText}>×</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+  const directAddToCart = () => {
+    if (!product.availability) {
+      Alert.alert('Unavailable', 'This item is currently unavailable.');
+      return;
+    }
+
+    const newCartItem: CartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity,
+      image: product.image || PLACEHOLDER_IMAGE,
+    };
+
+    dispatch(addToCartAction(newCartItem));
+    navigateToCart([...cart, newCartItem]);
+    setQuantity(1);
+  };
+
+  const goBack = () => {
+    router.back();
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={goBack}>
-          <Image source={require('../../../assets/icons/back.png')} style={styles.backIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Your Cart</Text>
-      </View>
-      <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
-        <Animated.View style={[styles.cartPanel, animatedStyle]}>
-          {cartItems.length === 0 ? (
-            <View style={styles.emptyCartContainer}>
-              <Text style={styles.emptyCartText}>Your cart is empty</Text>
-              <TouchableOpacity style={styles.continueShoppingButton} onPress={goBack}>
-                <Text style={styles.continueShoppingButtonText}>Continue Shopping</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <FlatList
-                data={cartItems}
-                renderItem={renderCartItem}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.cartList}
-                showsVerticalScrollIndicator={false}
-              />
-              <View style={styles.cartSummary}>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Total Items:</Text>
-                  <Text style={styles.summaryValue}>{getTotalItems()}</Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Total Amount:</Text>
-                  <Text style={styles.summaryValue}>Rs. {getTotalAmount()}</Text>
-                </View>
-              </View>
-              <View style={styles.checkoutContainer}>
-                <TouchableOpacity style={styles.checkoutButton} onPress={proceedToCheckout}>
-                  <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </Animated.View>
-      </PanGestureHandler>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Box
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 15,
+          borderBottomWidth: 1,
+          borderBottomColor: '#F0F0F0',
+        }}
+      >
+        <Pressable
+          style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
+          onPress={goBack}
+        >
+          <Image
+            source={require('../../../assets/icons/back.png')}
+            alt="Back"
+            style={{ width: 24, height: 24 }}
+            resizeMode="contain"
+          />
+        </Pressable>
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 18,
+            fontWeight: '600',
+            color: '#333333',
+            textAlign: 'center',
+          }}
+        >
+          Details
+        </Text>
+        <Box style={{ width: 40 }} />
+      </Box>
+
+      <Box
+        style={{
+          alignItems: 'center',
+          paddingVertical: 20,
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <Box
+          style={{
+            width: 350,
+            minHeight: 350,
+            aspectRatio: 1 / 1,
+            borderRadius: 12,
+            backgroundColor: product.image && !imageError ? '#F8F8F8' : '#E0E0E0',
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            source={{ uri: product.image && !imageError ? product.image : PLACEHOLDER_IMAGE }}
+            alt={product.name}
+            style={{ flex: 1, width: '100%', height: '100%', borderRadius: 12 }}
+            resizeMode="cover"
+            onError={(error) => {
+              console.error(
+                'Image Load Error for',
+                product.name,
+                ':',
+                error.nativeEvent.error,
+                'URL:',
+                product.image || 'No URL provided'
+              );
+              setImageError(true);
+            }}
+          />
+        </Box>
+      </Box>
+
+      <Box
+        style={{
+          paddingHorizontal: 20,
+          paddingVertical: 20,
+        }}
+      >
+        <Text style={{ fontSize: 24, fontWeight: '600', color: '#333333', marginBottom: 8 }}>
+          {product.name}
+        </Text>
+        <Text style={{ fontSize: 20, fontWeight: '600', color: '#333333', marginBottom: 12 }}>
+          Rs. {product.price}
+        </Text>
+        <Text style={{ fontSize: 16, color: '#666666', lineHeight: 24, marginBottom: 8 }}>
+          {product.description}
+        </Text>
+        <Text style={{ fontSize: 14, color: '#999999', fontStyle: 'italic', marginBottom: 8 }}>
+          Category: {product.category}
+        </Text>
+        {Array.isArray(product.allergies) && product.allergies.length > 0 && (
+          <Text style={{ fontSize: 14, color: '#FF4500', marginBottom: 8 }}>
+            Allergens: {product.allergies.join(', ')}
+          </Text>
+        )}
+        {!product.availability && (
+          <Text style={{ fontSize: 14, color: '#FF0000', fontWeight: '600', marginBottom: 8 }}>
+            Currently Unavailable
+          </Text>
+        )}
+        {Array.isArray(product.modifiers) && product.modifiers.length > 0 && (
+          <Text style={{ fontSize: 14, color: '#666666', fontStyle: 'italic' }}>
+            Customizations available (coming soon)
+          </Text>
+        )}
+      </Box>
+
+      <HStack
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginVertical: 30,
+          backgroundColor: product.availability ? '#55383882' : '#E0E0E0',
+          marginHorizontal: 20,
+          borderRadius: 25,
+          paddingVertical: 8,
+          paddingHorizontal: 10,
+          opacity: product.availability ? 1 : 0.6,
+        }}
+      >
+        <Pressable
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: quantity === 1 ? '#F8F8F8' : '#FFFFFF',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginHorizontal: 10,
+          }}
+          onPress={decreaseQuantity}
+          disabled={quantity === 1 || !product.availability}
+        >
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '600',
+              color: quantity === 1 || !product.availability ? '#CCCCCC' : '#333333',
+            }}
+          >
+            -
+          </Text>
+        </Pressable>
+        <Box style={{ minWidth: 60, alignItems: 'center', paddingHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#333333' }}>
+            {quantity}
+          </Text>
+        </Box>
+        <Pressable
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: '#FFFFFF',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginHorizontal: 10,
+          }}
+          onPress={increaseQuantity}
+          disabled={!product.availability}
+        >
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '600',
+              color: product.availability ? '#333333' : '#CCCCCC',
+            }}
+          >
+            +
+          </Text>
+        </Pressable>
+      </HStack>
+
+      <Box
+        style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          paddingHorizontal: 20,
+          paddingBottom: 30,
+        }}
+      >
+        <Pressable
+          style={{
+            backgroundColor: product.availability ? '#A09080' : '#CCCCCC',
+            height: 50,
+            borderRadius: 25,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+            opacity: product.availability ? 1 : 0.6,
+          }}
+          onPress={directAddToCart}
+          disabled={!product.availability}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '600' }}>
+            Add to Cart
+          </Text>
+        </Pressable>
+      </Box>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333333',
-    textAlign: 'center',
-  },
-  cartPanel: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-  },
-  cartList: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  cartItemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
-  },
-  itemImageContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-    overflow: 'hidden',
-  },
-  itemImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 12,
-  },
-  itemDetails: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 4,
-  },
-  itemPrice: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  quantityControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginHorizontal: 10,
-  },
-  quantityButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quantityButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  quantityText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    marginHorizontal: 15,
-  },
-  itemTotal: {
-    alignItems: 'flex-end',
-  },
-  itemTotalText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  removeButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#FF6B6B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  emptyCartContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  emptyCartText: {
-    fontSize: 18,
-    color: '#666666',
-    marginBottom: 20,
-  },
-  continueShoppingButton: {
-    backgroundColor: '#A09080',
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 25,
-  },
-  continueShoppingButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cartSummary: {
-    backgroundColor: '#F8F8F8',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  summaryLabel: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  checkoutContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  checkoutButton: {
-    backgroundColor: '#A09080',
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  checkoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});
-
-export default CartScreen;
+export default ProductDetailsScreen;
